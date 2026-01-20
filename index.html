@@ -9,35 +9,27 @@
             /* PADRES THEME */
             --primary: #2F241D; /* Padres Brown */
             --secondary: #FFC425; /* Padres Gold */
-            --accent: #A2AAAD; /* Cool Gray */
             --bg: #f8f8f8;
             --card-bg: #ffffff;
             --text: #2F241D;
-            --warning: #d32f2f; /* Red for alerts */
+            --warning: #d32f2f;
             --gc-blue: #0086d1;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         .container { max-width: 800px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
         
-        /* HEADER */
         .header { text-align: center; margin-bottom: 20px; border-bottom: 4px solid var(--secondary); padding-bottom: 15px; background: white; margin-top: -20px; padding-top: 30px; }
         .header h1 { margin: 0; color: var(--primary); font-size: 2rem; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; font-weight: bold; color: var(--secondary); text-shadow: 1px 1px 0 #000; letter-spacing: 2px; }
+        .header p { margin: 5px 0 0 0; color: var(--secondary); font-size: 0.9rem; font-weight: bold; text-shadow: 1px 1px 0 #000; letter-spacing: 2px; }
 
-        /* NAV TABS */
         .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; gap: 5px; }
         .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 5px; font-size: 0.85rem; font-weight: bold; color: #ccc; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; }
         .tab-btn.active { background: var(--secondary); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* VIEWS */
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* SHARED COMPONENTS */
-        .search-container { margin-bottom: 15px; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-        
         .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
         .stat-card { background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--secondary); }
         .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; color: var(--secondary); }
@@ -48,22 +40,13 @@
         .rule-card.important { border-left-color: var(--warning); }
         .rule-card h2 { margin-top: 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; color: var(--primary); }
         .rule-card .category-tag { font-size: 0.65rem; background: #eee; padding: 3px 8px; border-radius: 4px; color: #666; font-weight: normal; text-transform: uppercase; }
-        .rule-card p { line-height: 1.5; color: #444; margin: 10px 0; }
         
         .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
         .filter-btn { background: #e0e0e0; border: none; padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.9rem; color: #555; }
         .filter-btn.active { background: var(--primary); color: var(--secondary); }
 
-        /* PITCH COUNTER */
-        .counter-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--primary); }
-        .pitch-display { font-size: 5rem; font-weight: bold; color: var(--primary); line-height: 1; margin: 10px 0; }
-        .rest-status { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .ctrl-btn { border: none; padding: 20px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; touch-action: manipulation; }
-        .btn-minus { background: #e0e0e0; color: #333; }
-        .btn-plus { background: var(--primary); color: var(--secondary); font-weight: bold; box-shadow: 0 4px 0 #1a1410; }
-        .btn-plus:active { transform: translateY(4px); box-shadow: none; }
-        .reset-btn { margin-top: 20px; background: transparent; border: 1px solid #ccc; color: #888; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
+        .search-container { margin-bottom: 15px; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
 
         /* LINEUP CARD */
         .lineup-list { list-style: none; padding: 0; margin: 0; }
@@ -75,7 +58,17 @@
         .pos-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; font-weight: bold; color: #333; }
         .move-btn { background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: 0 5px; }
         .move-btn:hover { color: var(--primary); }
+        .reset-btn { margin-top: 20px; background: transparent; border: 1px solid #ccc; color: #888; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
 
+        /* PITCH COUNTER */
+        .counter-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--primary); }
+        .pitch-display { font-size: 5rem; font-weight: bold; color: var(--primary); line-height: 1; margin: 10px 0; }
+        .rest-status { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .ctrl-btn { border: none; padding: 20px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; touch-action: manipulation; }
+        .btn-minus { background: #e0e0e0; color: #333; }
+        .btn-plus { background: var(--primary); color: var(--secondary); font-weight: bold; box-shadow: 0 4px 0 #1a1410; }
+        .btn-plus:active { transform: translateY(4px); box-shadow: none; }
     </style>
 </head>
 <body>
@@ -100,10 +93,7 @@
                 Set your batting order & positions.
             </div>
         </div>
-        
-        <ul class="lineup-list" id="lineupContainer">
-            </ul>
-        
+        <ul class="lineup-list" id="lineupContainer"></ul>
         <div style="text-align: center; margin-top: 20px;">
             <button class="reset-btn" onclick="resetPositions()">Clear Positions</button>
         </div>
@@ -128,11 +118,9 @@
                 <div class="value">Sit 1/All 1</div>
             </div>
         </div>
-
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search rules...">
         </div>
-
         <div class="filters" id="filterContainer">
             <button class="filter-btn active" onclick="filterRules('All')">All</button>
             <button class="filter-btn" onclick="filterRules('Pitching')">Pitching</button>
@@ -140,7 +128,6 @@
             <button class="filter-btn" onclick="filterRules('Roster & Batting')">Roster</button>
             <button class="filter-btn" onclick="filterRules('Base Running')">Running</button>
         </div>
-
         <div id="rulesContainer"></div>
     </div>
 
@@ -148,19 +135,16 @@
         <div class="counter-card">
             <div style="color: #666; font-size: 0.9rem; text-transform: uppercase;">Current Count</div>
             <div class="pitch-display" id="countDisplay">0</div>
-            
             <div class="rest-status">
                 <span style="font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block;" id="restDisplay">0 Days Rest</span>
                 <span style="font-size: 0.9rem; color: #666;" id="thresholdDisplay">20 pitches until 1 Day Rest</span>
             </div>
-
             <div class="controls">
                 <button class="ctrl-btn btn-minus" onclick="updatePitch(-1)">−</button>
                 <button class="ctrl-btn btn-plus" onclick="updatePitch(1)">+ Pitch</button>
             </div>
             <button class="reset-btn" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
         </div>
-        
         <div style="margin-top: 20px; font-size: 0.85rem; color: #666; padding: 0 10px;">
             <strong>Rest Rules (11-12):</strong> 1-20 (0 Days), 21-35 (1 Day), 36-50 (2 Days), 51-65 (3 Days), 66+ (4 Days). <strong>Max 85.</strong>
         </div>
@@ -172,7 +156,6 @@
             <p>View full roster & live stream.</p>
             <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 10px;">Open Schedule</a>
         </div>
-
         <h3 style="margin-left: 10px; color: var(--primary);">Upcoming (Manual)</h3>
         <ul style="list-style: none; padding: 0;" id="manualGamesList"></ul>
     </div>
@@ -181,22 +164,30 @@
 <script src="data.js"></script>
 <script>
     // --- APP LOGIC ---
+    let currentRosterOrder = [];
+    let pitchCount = 0;
 
     // 1. DATA CHECK & INIT
-    if (typeof broncoRules === 'undefined') { alert("Error: data.js not loaded."); }
-    else {
-        renderRules(broncoRules);
-        renderGames(manualGames);
-        initLineup(); // Initialize Roster
-    }
+    window.onload = function() {
+        if (typeof broncoRules === 'undefined') {
+            alert("Error: data.js failed to load. Please check that data.js is in the same folder and has no errors.");
+        } else {
+            // Safe Roster Load
+            if (typeof teamRoster !== 'undefined') {
+                currentRosterOrder = [...teamRoster];
+                renderLineup();
+            } else {
+                console.error("teamRoster missing from data.js");
+                document.getElementById('lineupContainer').innerHTML = "<li style='padding:20px; text-align:center; color:red;'>Roster not found in data.js</li>";
+            }
+
+            renderRules(broncoRules);
+            renderGames(manualGames);
+            updatePitch(0);
+        }
+    };
 
     // --- LINEUP LOGIC ---
-    let currentRosterOrder = [...teamRoster]; // Copy from data.js
-    
-    function initLineup() {
-        renderLineup();
-    }
-
     function renderLineup() {
         const container = document.getElementById('lineupContainer');
         container.innerHTML = currentRosterOrder.map((player, index) => `
@@ -211,16 +202,11 @@
                 <div style="display:flex; align-items:center; gap: 5px;">
                     <select class="pos-select">
                         <option value="">Pos</option>
-                        <option value="P">P</option>
-                        <option value="C">C</option>
-                        <option value="1B">1B</option>
-                        <option value="2B">2B</option>
-                        <option value="3B">3B</option>
-                        <option value="SS">SS</option>
-                        <option value="LF">LF</option>
-                        <option value="CF">CF</option>
-                        <option value="RF">RF</option>
-                        <option value="BN">Bench</option>
+                        <option value="P">P</option><option value="C">C</option>
+                        <option value="1B">1B</option><option value="2B">2B</option>
+                        <option value="3B">3B</option><option value="SS">SS</option>
+                        <option value="LF">LF</option><option value="CF">CF</option>
+                        <option value="RF">RF</option><option value="BN">Bench</option>
                     </select>
                     <div style="display:flex; flex-direction:column;">
                         <button class="move-btn" onclick="movePlayer(${index}, -1)">▲</button>
@@ -232,21 +218,18 @@
     }
 
     function movePlayer(index, direction) {
-        if (direction === -1 && index === 0) return; // Can't move top up
-        if (direction === 1 && index === currentRosterOrder.length - 1) return; // Can't move bottom down
+        if (direction === -1 && index === 0) return;
+        if (direction === 1 && index === currentRosterOrder.length - 1) return;
         
-        // Swap elements
         const temp = currentRosterOrder[index];
         currentRosterOrder[index] = currentRosterOrder[index + direction];
         currentRosterOrder[index + direction] = temp;
-        
         renderLineup();
     }
 
     function resetPositions() {
         document.querySelectorAll('.pos-select').forEach(select => select.value = "");
     }
-
 
     // --- RULES LOGIC ---
     const rulesContainer = document.getElementById('rulesContainer');
@@ -265,7 +248,10 @@
     function filterRules(category) {
         currentCategory = category;
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === category || (category === 'Time' && btn.innerText === 'Time')));
-        
+        applyFilters();
+    }
+
+    function applyFilters() {
         const query = searchInput.value.toLowerCase();
         const filtered = broncoRules.filter(rule => {
             const matchesCategory = currentCategory === 'All' || rule.category === currentCategory || (currentCategory === 'Time' && rule.category === 'Game Time');
@@ -274,7 +260,7 @@
         });
         renderRules(filtered);
     }
-    searchInput.addEventListener('input', () => filterRules(currentCategory));
+    searchInput.addEventListener('input', applyFilters);
 
     // --- SCHEDULE LOGIC ---
     function renderGames(games) {
@@ -302,7 +288,6 @@
     }
 
     // --- PITCH COUNTER LOGIC ---
-    let pitchCount = 0;
     function updatePitch(change) {
         if (change === -999) pitchCount = 0; else pitchCount += change;
         if (pitchCount < 0) pitchCount = 0;
@@ -325,8 +310,6 @@
             document.getElementById('thresholdDisplay').innerText = `${next - pitchCount} until ${status.next} Rest`;
         }
     }
-    updatePitch(0);
-
 </script>
 </body>
 </html>
