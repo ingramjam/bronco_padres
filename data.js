@@ -31,7 +31,7 @@ const pitchThresholds = [
     { limit: 85, rest: "4 Days", next: "MAX" }
 ];
 
-// 4. ROSTER (This is the part that was likely missing)
+// 4. ROSTER
 const teamRoster = [
     { name: "Jace Ingram", number: "#3" },
     { name: "Jaxson Fonseca", number: "#29" },
