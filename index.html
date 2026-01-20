@@ -30,7 +30,7 @@
 
         /* NAV TABS */
         .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; gap: 5px; }
-        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 2px; font-size: 0.8rem; font-weight: bold; color: #ccc; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; text-align: center; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 2px; font-size: 0.75rem; font-weight: bold; color: #ccc; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; text-align: center; }
         .tab-btn.active { background: var(--secondary); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
         .view-section { display: none; }
@@ -51,12 +51,12 @@
 
         /* BINGO STYLES */
         .bingo-wrapper { display: flex; flex-direction: column; align-items: center; }
-        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; max-width: 400px; background-color: #333; border: 2px solid #333; padding: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .bingo-square { background-color: #fff; padding: 5px; text-align: center; font-size: 0.65rem; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; height: 60px; word-break: break-word; line-height: 1.1; font-weight: 500; }
-        .bingo-square.checked { background-color: #c0d9af; text-decoration: line-through; color: #777; }
-        .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: contain; background-repeat: no-repeat; background-position: center; }
-        .venmo-link { margin-top: 15px; text-align: center; }
-        .venmo-link a { color: #007bff; text-decoration: none; font-weight: bold; }
+        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; max-width: 400px; background-color: #333; border: 2px solid #333; padding: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 10px; }
+        .bingo-square { background-color: #fff; padding: 5px; text-align: center; font-size: 0.6rem; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; height: 60px; word-break: break-word; line-height: 1.1; font-weight: 500; border: 1px solid #ddd; }
+        .bingo-square.checked { background-color: #c0d9af; text-decoration: line-through; color: #777; opacity: 0.8; }
+        .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: contain; background-repeat: no-repeat; background-position: center; pointer-events: none; }
+        .venmo-link { margin-top: 15px; text-align: center; font-weight: bold; }
+        .venmo-link a { color: #007bff; text-decoration: none; }
 
         /* SHARED & OTHER VIEWS */
         .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
@@ -98,8 +98,8 @@
     </div>
 
     <div id="view-lineup" class="view-section active">
-        <div style="background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-size: 0.9rem; color: #666;">
-            <strong>Drag & Drop</strong> players to reorder.<br>Select positions to save automatically.
+        <div style="background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-size: 0.8rem; color: #666;">
+            <strong>Drag & Drop</strong> to reorder. Positions save automatically.
         </div>
         <ul class="lineup-list" id="lineupContainer"></ul>
         <button class="reset-btn" onclick="resetLineup()">Reset Order & Positions</button>
@@ -107,7 +107,7 @@
 
     <div id="view-bingo" class="view-section">
         <div class="bingo-wrapper">
-            <h2 style="color: var(--primary); margin-top:0;">Game Time Bingo!</h2>
+            <h2 style="color: var(--primary); margin:0;">Game Time Bingo!</h2>
             <div class="bingo-card" id="bingoCard"></div>
             <button class="reset-btn" id="bingoResetBtn" style="margin-top: 15px;">New Card</button>
             <div class="venmo-link"><a href="https://venmo.com/jwyld" target="_blank">Donate</a></div>
@@ -157,41 +157,73 @@
     </div>
 </div>
 
-<script src="data.js"></script>
 <script>
-    // --- APP LOGIC ---
+    /* =========================================
+       1. DATA DEFINITIONS (EMBEDDED)
+       ========================================= */
+    const teamRoster = [
+        { name: "Jace Ingram", number: "#3" },
+        { name: "Jaxson Fonseca", number: "#29" },
+        { name: "JD Mayberry", number: "#51" },
+        { name: "Adam Enriquez", number: "" },
+        { name: "Blake Taylor", number: "" },
+        { name: "Brooks Schott", number: "" },
+        { name: "Declan Riley", number: "" },
+        { name: "Donovan Cox", number: "" },
+        { name: "Giovani Preciado", number: "" },
+        { name: "Landon Hodgson", number: "" },
+        { name: "Myles Gonzalez", number: "" },
+        { name: "Thomas Cabral", number: "" }
+    ];
+
+    const broncoRules = [
+        { category: "Pitching", title: "Daily Max Pitches", content: "Max 85 pitches/day. Finish batter if limit reached.", important: true },
+        { category: "Pitching", title: "Rest Days (11-12)", content: "1-20: 0 Days | 21-35: 1 Day | 36-50: 2 Days | 51-65: 3 Days | 66+: 4 Days.", important: true },
+        { category: "Pitching", title: "Pitcher Removal", content: "Once removed, cannot return to pitch. Remove immediately if hitting 3 batters.", important: true },
+        { category: "Game Time", title: "Duration", content: "7 innings. No new inning after 1 hr 50 mins. Hard stop 9:45 PM.", important: true },
+        { category: "Game Time", title: "Mercy Rule", content: "10 run lead after 5 complete innings (4 ½ if Home leads).", important: true },
+        { category: "Roster & Batting", title: "Batting", content: "Continuous batting order. Everyone bats.", important: false },
+        { category: "Roster & Batting", title: "Min Play", content: "No player sits 2 innings until all have sat 1. Must play 1 inning infield (Rec only).", important: true },
+        { category: "Base Running", title: "Slide/Avoid", content: "Must slide or avoid contact. Malicious contact = ejection & out.", important: true }
+    ];
+
+    const manualGames = [
+        { date: "SAT<br>FEB 24", opponent: "vs. Dodgers", info: "10:00 AM • Field 3 (Home)" },
+        { date: "TUE<br>FEB 27", opponent: "@ Angels", info: "5:30 PM • Field 1 (Visitor)" }
+    ];
+
+    /* =========================================
+       2. APP LOGIC
+       ========================================= */
     let currentRosterOrder = [];
     
+    // Init App
     window.onload = function() {
-        if (typeof broncoRules === 'undefined') {
-            alert("Error: data.js failed to load.");
-        } else {
-            initLineup();
-            renderRules(broncoRules);
-            renderGames(manualGames);
-            initBingo();
-            // Init Sortable
-            new Sortable(document.getElementById('lineupContainer'), {
-                handle: '.lineup-item', // Drag whole item
-                animation: 150,
-                onEnd: function (evt) {
-                    // Update array order based on DOM
-                    const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
-                    currentRosterOrder.splice(evt.newIndex, 0, movedItem);
-                    saveLineup();
-                    renderLineup(); // Re-render to update numbers
-                }
-            });
-        }
+        initLineup();
+        renderRules(broncoRules);
+        renderGames(manualGames);
+        initBingo();
+        
+        // Init Sortable (Drag & Drop)
+        new Sortable(document.getElementById('lineupContainer'), {
+            handle: '.lineup-item', 
+            animation: 150,
+            onEnd: function (evt) {
+                const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
+                currentRosterOrder.splice(evt.newIndex, 0, movedItem);
+                saveLineup();
+                renderLineup(); // Re-render to update numbers
+            }
+        });
     };
 
     // --- LINEUP LOGIC ---
     function initLineup() {
-        const saved = localStorage.getItem('broncoLineup_v2');
+        // CHANGED KEY TO v3 TO FORCE RELOAD OF DATA
+        const saved = localStorage.getItem('broncoLineup_v3');
         if (saved) {
             currentRosterOrder = JSON.parse(saved);
         } else {
-            // Add 'pos' property to roster
             currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
         }
         renderLineup();
@@ -234,7 +266,7 @@
     }
 
     function saveLineup() {
-        localStorage.setItem('broncoLineup_v2', JSON.stringify(currentRosterOrder));
+        localStorage.setItem('broncoLineup_v3', JSON.stringify(currentRosterOrder));
     }
 
     function resetLineup() {
@@ -294,7 +326,6 @@
         localStorage.setItem('bingoTerms', JSON.stringify(currentTerms));
         createBingoCard(currentTerms);
     }
-
 
     // --- RULES & SCHEDULE LOGIC ---
     function renderRules(rules) {
