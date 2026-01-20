@@ -49,12 +49,52 @@
         
         .reset-btn { margin-top: 20px; background: white; border: 1px solid #ccc; color: #333; padding: 12px 25px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; display: block; margin-left: auto; margin-right: auto; }
 
-        /* BINGO STYLES */
+        /* BINGO STYLES (UPDATED) */
         .bingo-wrapper { display: flex; flex-direction: column; align-items: center; }
-        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; max-width: 400px; background-color: #333; border: 2px solid #333; padding: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 10px; }
-        .bingo-square { background-color: #fff; padding: 5px; text-align: center; font-size: 0.6rem; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; height: 60px; word-break: break-word; line-height: 1.1; font-weight: 500; border: 1px solid #ddd; }
-        .bingo-square.checked { background-color: #c0d9af; text-decoration: line-through; color: #777; opacity: 0.8; }
-        .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: contain; background-repeat: no-repeat; background-position: center; pointer-events: none; }
+        .bingo-card { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 3px; 
+            width: 100%; 
+            background-color: var(--primary); /* Padres Brown Background */
+            border: 3px solid var(--secondary); /* Padres Gold Border */
+            padding: 3px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+            margin-top: 10px; 
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .bingo-square { 
+            background-color: #fff; 
+            padding: 2px; 
+            text-align: center; 
+            font-size: 0.6rem; 
+            cursor: pointer; 
+            user-select: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            aspect-ratio: 1 / 1; /* Keeps squares perfect square on any phone */
+            word-break: break-word; 
+            line-height: 1.1; 
+            font-weight: 600; 
+            color: var(--primary);
+            border-radius: 2px;
+        }
+        .bingo-square.checked { 
+            background-color: var(--secondary); /* Gold Background */
+            color: var(--primary); /* Brown Text */
+            border: 1px solid var(--primary);
+            opacity: 1; 
+        }
+        .center-square { 
+            background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); 
+            background-size: 80%; 
+            background-repeat: no-repeat; 
+            background-position: center; 
+            background-color: white;
+            pointer-events: none; 
+        }
         .venmo-link { margin-top: 15px; text-align: center; font-weight: bold; }
         .venmo-link a { color: #007bff; text-decoration: none; }
 
@@ -107,9 +147,9 @@
 
     <div id="view-bingo" class="view-section">
         <div class="bingo-wrapper">
-            <h2 style="color: var(--primary); margin:0;">Game Time Bingo!</h2>
+            <h2 style="color: var(--primary); margin:0 0 10px 0;">Game Time Bingo!</h2>
             <div class="bingo-card" id="bingoCard"></div>
-            <button class="reset-btn" id="bingoResetBtn" style="margin-top: 15px;">New Card</button>
+            <button class="reset-btn" id="bingoResetBtn" style="margin-top: 20px; background: var(--primary); color: var(--secondary); font-weight: bold; border: none;">New Card</button>
             <div class="venmo-link"><a href="https://venmo.com/jwyld" target="_blank">Donate</a></div>
         </div>
     </div>
@@ -219,7 +259,6 @@
 
     // --- LINEUP LOGIC ---
     function initLineup() {
-        // CHANGED KEY TO v3 TO FORCE RELOAD OF DATA
         const saved = localStorage.getItem('broncoLineup_v3');
         if (saved) {
             currentRosterOrder = JSON.parse(saved);
