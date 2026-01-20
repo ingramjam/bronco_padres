@@ -17,7 +17,6 @@ const broncoRules = [
 ];
 
 // 2. MANUAL SCHEDULE
-// Update this list whenever you want to change the "Manual" games on the Schedule tab
 const manualGames = [
     { date: "SAT<br>FEB 24", opponent: "vs. Dodgers", info: "10:00 AM • Field 3 (Home)" },
     { date: "TUE<br>FEB 27", opponent: "@ Angels", info: "5:30 PM • Field 1 (Visitor)" }
@@ -30,4 +29,20 @@ const pitchThresholds = [
     { limit: 50, rest: "2 Days", next: "3 Days" },
     { limit: 65, rest: "3 Days", next: "4 Days" },
     { limit: 85, rest: "4 Days", next: "MAX" }
+];
+
+// 4. ROSTER
+const teamRoster = [
+    { name: "Jace Ingram", number: "#3" },
+    { name: "Jaxson Fonseca", number: "#29" },
+    { name: "JD Mayberry", number: "#51" },
+    { name: "Adam Enriquez", number: "" },
+    { name: "Blake Taylor", number: "" },
+    { name: "Brooks Schott", number: "" },
+    { name: "Declan Riley", number: "" },
+    { name: "Donovan Cox", number: "" },
+    { name: "Giovani Preciado", number: "" },
+    { name: "Landon Hodgson", number: "" },
+    { name: "Myles Gonzalez", number: "" },
+    { name: "Thomas Cabral", number: "" }
 ];
