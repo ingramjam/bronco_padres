@@ -13,73 +13,64 @@
             --bg: #f4f4f9;
             --card-bg: #ffffff;
             --text: #333;
+            --gc-blue: #0086d1;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        
-        /* Layout */
         .container { max-width: 800px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
-        
-        /* Header */
         .header { text-align: center; margin-bottom: 20px; }
         .header h1 { margin: 0; color: var(--primary); font-size: 1.8rem; }
         .header p { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; }
-
-        /* Navigation Tabs */
-        .nav-tabs { display: flex; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
-        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px; font-size: 1rem; font-weight: bold; color: #888; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .nav-tabs { display: flex; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; gap: 5px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 5px; font-size: 0.9rem; font-weight: bold; color: #888; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        /* VIEWS */
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- RULES VIEW STYLES --- */
         .search-container { margin-bottom: 15px; }
         input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-        
         .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
         .stat-card { background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; }
         .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-card .value { font-size: 1.3rem; font-weight: bold; }
         .stat-card.alert { background: var(--accent); }
-
         .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
         .filter-btn { background: #e0e0e0; border: none; padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.9rem; color: #555; }
         .filter-btn.active { background: var(--primary); color: white; }
-
         .rule-card { background: var(--card-bg); padding: 18px; border-radius: 12px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .rule-card.important { border-left-color: var(--accent); }
         .rule-card h2 { margin-top: 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; color: var(--primary); }
         .rule-card .category-tag { font-size: 0.65rem; background: #eee; padding: 3px 8px; border-radius: 4px; color: #666; font-weight: normal; text-transform: uppercase; }
         .rule-card p { line-height: 1.5; color: #444; margin: 10px 0; }
         .rule-card .source { font-size: 0.75rem; color: #999; font-style: italic; display: block; text-align: right; }
-
-        /* --- PITCH COUNTER STYLES --- */
         .counter-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
         .pitch-display { font-size: 5rem; font-weight: bold; color: var(--text); line-height: 1; margin: 10px 0; transition: color 0.3s; }
         .pitch-label { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-
         .rest-status { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
         .rest-days { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
         .next-threshold { font-size: 0.9rem; color: #666; }
-
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .ctrl-btn { border: none; padding: 20px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; touch-action: manipulation; }
         .btn-minus { background: #e0e0e0; color: #333; }
-        .btn-plus { background: var(--primary); color: white; font-weight: bold; box-shadow: 0 4px 0 #00332a; active { transform: translateY(4px); box-shadow: none; } }
+        .btn-plus { background: var(--primary); color: white; font-weight: bold; box-shadow: 0 4px 0 #00332a; }
         .btn-plus:active { transform: translateY(4px); box-shadow: none; }
-
         .reset-btn { margin-top: 20px; background: transparent; border: 1px solid #ccc; color: #888; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
-
-        /* Threshold Colors */
+        .gc-link-card { background: var(--card-bg); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .gc-logo { color: var(--gc-blue); font-weight: 900; font-size: 1.5rem; margin-bottom: 10px; display: block; }
+        .gc-button { background: var(--gc-blue); color: white; text-decoration: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(0,134,209,0.3); transition: transform 0.2s; }
+        .gc-button:active { transform: scale(0.98); }
+        .game-list { list-style: none; padding: 0; margin: 0; }
+        .game-item { background: white; border-bottom: 1px solid #eee; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .game-item:last-child { border-bottom: none; }
+        .game-date { font-weight: bold; color: var(--primary); font-size: 0.9rem; width: 60px; text-align: center; line-height: 1.2; }
+        .game-info { flex: 1; padding-left: 15px; }
+        .game-opponent { font-weight: 600; font-size: 1.1rem; margin-bottom: 2px; }
+        .game-meta { font-size: 0.85rem; color: #666; }
+        .schedule-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .status-0 { color: var(--safe); }
         .status-1 { color: var(--warning); }
         .status-2 { color: #f57f17; }
         .status-3 { color: #e65100; }
         .status-4 { color: var(--accent); }
-
     </style>
 </head>
 <body>
@@ -92,7 +83,8 @@
 
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('rules')">📖 Rules</button>
-        <button class="tab-btn" onclick="switchTab('counter')">⚾ Pitch Counter</button>
+        <button class="tab-btn" onclick="switchTab('counter')">⚾ Pitching</button>
+        <button class="tab-btn" onclick="switchTab('schedule')">📅 Schedule</button>
     </div>
 
     <div id="view-rules" class="view-section active">
@@ -128,8 +120,7 @@
             <button class="filter-btn" onclick="filterRules('Field Prep')">Field Prep</button>
         </div>
 
-        <div id="rulesContainer">
-            </div>
+        <div id="rulesContainer"></div>
     </div>
 
     <div id="view-counter" class="view-section">
@@ -161,31 +152,44 @@
         </div>
     </div>
 
+    <div id="view-schedule" class="view-section">
+        <div class="gc-link-card">
+            <span class="gc-logo">GameChanger</span>
+            <p>View full roster, stats, and live stream.</p>
+            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" class="gc-button">
+                Open Team Schedule
+            </a>
+        </div>
+
+        <h3 style="margin-left: 10px; color: #555;">Upcoming Games (Manual)</h3>
+        <div class="schedule-container">
+            <ul class="game-list" id="manualGamesList">
+                </ul>
+        </div>
+        <p style="text-align: center; color: #999; font-size: 0.8rem; margin-top: 15px;">
+            Edit <code>data.js</code> to update this list.
+        </p>
+    </div>
 </div>
+
+<script src="data.js"></script>
 
 <script>
     // --- APP LOGIC ---
 
-    // 1. DATA: RULES
-    const broncoRules = [
-        { category: "Pitching", title: "Daily Max Pitches", content: "Pitchers may pitch a maximum of 85 pitches per day. [cite_start]If they hit the limit during a batter, they may finish that batter.", important: true, source: "Appx A-5, Sec 5.A [cite: 1650]" },
-        { category: "Pitching", title: "Rest Days (Ages 11-12)", content: "1-20: 0 Days | 21-35: 1 Day | 36-50: 2 Days | 51-65: 3 Days | [cite_start]66+: 4 Days.", important: true, source: "Appx A-5, Sec 5 Table [cite: 1655]" },
-        { category: "Pitching", title: "Pitcher Removal", content: "Once removed from the mound, a pitcher cannot return to pitch. [cite_start]Remove immediately if they hit 3 batters in one game.", important: true, source: "Appx A-5, Sec 5.A & 5.C [cite: 1661, 1664]" },
-        [cite_start]{ category: "Pitching", title: "Mound Visits", content: "Two visits in one inning = mandatory pitching change (except for injury).", important: false, source: "Appx A-5, Sec 5.B [cite: 1662]" },
-        { category: "Game Time", title: "Duration & Limits", content: "Regulation: 7 innings. No new inning after 1 hr 50 mins. [cite_start]Hard stop 9:45 PM.", important: true, source: "Appx A-5, Sec 4 [cite: 1635-1636, 1641]" },
-        [cite_start]{ category: "Game Time", title: "Mercy Rule", content: "10 run lead after 5 complete innings (4 ½ if Home leads).", important: true, source: "Appx A-5, Sec 4.G [cite: 1646]" },
-        { category: "Roster & Batting", title: "Batting Order", content: "Continuous batting order. [cite_start]Everyone bats.", important: false, source: "Appx A-5, Sec 6.A [cite: 1667]" },
-        [cite_start]{ category: "Roster & Batting", title: "Minimum Play", content: "No player sits 2 innings until all have sat 1. No player sits 3 until all have sat 2. Must play 1 inning in infield (Rec only).", important: true, source: "Appx A-5, Sec 4.F [cite: 1642-1644]" },
-        { category: "Base Running", title: "Courtesy Runners", content: "Allowed for Catcher w/ 2 outs. [cite_start]Must be last recorded out.", important: false, source: "Appx A-5, Sec 7.A [cite: 1669]" },
-        { category: "Base Running", title: "Slide or Avoid", content: "Must slide or avoid contact. [cite_start]Malicious contact = ejection & out.", important: true, source: "Appx A-5, Sec 9 [cite: 1676, 1680]" },
-        { category: "Field Prep", title: "Home Team Duties", content: "Official Scorebook. Rake plate/mound. Chalk lines. Bases. [cite_start]Clean Home dugout.", important: false, source: "Sec XV, 1.A [cite: 679-685]" },
-        { category: "Field Prep", title: "Visiting Team Duties", content: "Scoreboard Operator. Drag field (End of game). [cite_start]Clean Visitor dugout.", important: false, source: "Sec XV, 1.B [cite: 687-693]" }
-    ];
-
-    // 2. RULES FUNCTIONS
+    // 1. INIT: Render Rules & Games (Using data from data.js)
     const rulesContainer = document.getElementById('rulesContainer');
     const searchInput = document.getElementById('searchInput');
+    const manualGamesList = document.getElementById('manualGamesList');
     let currentCategory = 'All';
+
+    // Verify data.js loaded
+    if (typeof broncoRules === 'undefined') {
+        alert("Error: data.js not loaded. Check file path.");
+    } else {
+        renderRules(broncoRules);
+        renderGames(manualGames);
+    }
 
     function renderRules(rules) {
         rulesContainer.innerHTML = rules.map(rule => `
@@ -197,6 +201,19 @@
         `).join('');
     }
 
+    function renderGames(games) {
+        manualGamesList.innerHTML = games.map(game => `
+            <li class="game-item">
+                <div class="game-date">${game.date}</div>
+                <div class="game-info">
+                    <div class="game-opponent">${game.opponent}</div>
+                    <div class="game-meta">${game.info}</div>
+                </div>
+            </li>
+        `).join('');
+    }
+
+    // 2. SEARCH & FILTER
     function filterRules(category) {
         currentCategory = category;
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -216,58 +233,43 @@
         });
         renderRules(filtered);
     }
-
     searchInput.addEventListener('input', applyFilters);
-    renderRules(broncoRules); // Init rules
 
     // 3. TAB LOGIC
     function switchTab(tabId) {
-        // Hide all views
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-        // Show selected
         document.getElementById('view-' + tabId).classList.add('active');
-        // Highlight button (simple logic for 2 buttons)
-        const btnIndex = tabId === 'rules' ? 0 : 1;
-        document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+        
+        const tabMap = { 'rules': 0, 'counter': 1, 'schedule': 2 };
+        document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
     }
 
     // 4. PITCH COUNTER LOGIC
     let pitchCount = 0;
-    const maxPitches = 85;
-    const thresholds = [
-        { limit: 20, rest: "0 Days", next: "1 Day" },
-        { limit: 35, rest: "1 Day", next: "2 Days" },
-        { limit: 50, rest: "2 Days", next: "3 Days" },
-        { limit: 65, rest: "3 Days", next: "4 Days" },
-        { limit: 85, rest: "4 Days", next: "MAX" }
-    ];
-
+    
     function updatePitch(change) {
         if (change === -999) pitchCount = 0;
         else pitchCount += change;
-        
         if (pitchCount < 0) pitchCount = 0;
         
-        // Update Display
         const countDisplay = document.getElementById('countDisplay');
         const restDisplay = document.getElementById('restDisplay');
         const thresholdDisplay = document.getElementById('thresholdDisplay');
         
         countDisplay.innerText = pitchCount;
 
-        // Calculate Stats
-        let currentStatus = thresholds[0];
-        let nextThreshold = thresholds[0].limit;
+        // Use thresholds from data.js
+        let currentStatus = pitchThresholds[0];
+        let nextThreshold = pitchThresholds[0].limit;
         let colorClass = "status-0";
 
-        if (pitchCount > 65) { currentStatus = thresholds[4]; nextThreshold = 85; colorClass = "status-4"; }
-        else if (pitchCount > 50) { currentStatus = thresholds[3]; nextThreshold = 65; colorClass = "status-3"; }
-        else if (pitchCount > 35) { currentStatus = thresholds[2]; nextThreshold = 50; colorClass = "status-2"; }
-        else if (pitchCount > 20) { currentStatus = thresholds[1]; nextThreshold = 35; colorClass = "status-1"; }
+        // Simple logic for standard thresholds
+        if (pitchCount > 65) { currentStatus = pitchThresholds[4]; nextThreshold = 85; colorClass = "status-4"; }
+        else if (pitchCount > 50) { currentStatus = pitchThresholds[3]; nextThreshold = 65; colorClass = "status-3"; }
+        else if (pitchCount > 35) { currentStatus = pitchThresholds[2]; nextThreshold = 50; colorClass = "status-2"; }
+        else if (pitchCount > 20) { currentStatus = pitchThresholds[1]; nextThreshold = 35; colorClass = "status-1"; }
 
-        // Alert text logic
         if (pitchCount >= 85) {
             restDisplay.innerText = "MAX LIMIT REACHED";
             thresholdDisplay.innerText = "Finish current batter only.";
@@ -277,14 +279,9 @@
             const pitchesLeft = nextThreshold - pitchCount;
             thresholdDisplay.innerText = `${pitchesLeft} pitches until ${currentStatus.next} Rest`;
         }
-
-        // Apply Colors
         countDisplay.className = `pitch-display ${colorClass}`;
     }
-
-    // Init Counter
-    updatePitch(0);
-
+    updatePitch(0); // Init
 </script>
 </body>
 </html>
