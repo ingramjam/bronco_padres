@@ -3,91 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EYB Bronco Manager</title>
+    <title>Bronco Padres Manager</title>
     <style>
         :root {
-            --primary: #004d40;
-            --accent: #d32f2f;
-            --warning: #fbc02d;
-            --safe: #388e3c;
-            --bg: #f4f4f9;
+            /* PADRES THEME */
+            --primary: #2F241D; /* Padres Brown */
+            --secondary: #FFC425; /* Padres Gold */
+            --accent: #A2AAAD; /* Cool Gray */
+            --bg: #f8f8f8;
             --card-bg: #ffffff;
-            --text: #333;
+            --text: #2F241D;
+            --warning: #d32f2f; /* Red for alerts */
             --gc-blue: #0086d1;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         .container { max-width: 800px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { margin: 0; color: var(--primary); font-size: 1.8rem; }
-        .header p { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; }
-        .nav-tabs { display: flex; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; gap: 5px; }
-        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 5px; font-size: 0.9rem; font-weight: bold; color: #888; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* HEADER */
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 4px solid var(--secondary); padding-bottom: 15px; background: white; margin-top: -20px; padding-top: 30px; }
+        .header h1 { margin: 0; color: var(--primary); font-size: 2rem; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; font-weight: bold; color: var(--secondary); text-shadow: 1px 1px 0 #000; letter-spacing: 2px; }
+
+        /* NAV TABS */
+        .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; gap: 5px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 5px; font-size: 0.85rem; font-weight: bold; color: #ccc; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; }
+        .tab-btn.active { background: var(--secondary); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+        /* VIEWS */
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* SHARED COMPONENTS */
         .search-container { margin-bottom: 15px; }
         input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        
         .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
-        .stat-card { background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; }
-        .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card { background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--secondary); }
+        .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; color: var(--secondary); }
         .stat-card .value { font-size: 1.3rem; font-weight: bold; }
-        .stat-card.alert { background: var(--accent); }
-        .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
-        .filter-btn { background: #e0e0e0; border: none; padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.9rem; color: #555; }
-        .filter-btn.active { background: var(--primary); color: white; }
-        .rule-card { background: var(--card-bg); padding: 18px; border-radius: 12px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .rule-card.important { border-left-color: var(--accent); }
+        .stat-card.alert { background: var(--warning); border-bottom-color: #b71c1c; }
+
+        .rule-card { background: var(--card-bg); padding: 18px; border-radius: 12px; border-left: 6px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .rule-card.important { border-left-color: var(--warning); }
         .rule-card h2 { margin-top: 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; color: var(--primary); }
         .rule-card .category-tag { font-size: 0.65rem; background: #eee; padding: 3px 8px; border-radius: 4px; color: #666; font-weight: normal; text-transform: uppercase; }
         .rule-card p { line-height: 1.5; color: #444; margin: 10px 0; }
-        .rule-card .source { font-size: 0.75rem; color: #999; font-style: italic; display: block; text-align: right; }
-        .counter-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .pitch-display { font-size: 5rem; font-weight: bold; color: var(--text); line-height: 1; margin: 10px 0; transition: color 0.3s; }
-        .pitch-label { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
+        .filter-btn { background: #e0e0e0; border: none; padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.9rem; color: #555; }
+        .filter-btn.active { background: var(--primary); color: var(--secondary); }
+
+        /* PITCH COUNTER */
+        .counter-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--primary); }
+        .pitch-display { font-size: 5rem; font-weight: bold; color: var(--primary); line-height: 1; margin: 10px 0; }
         .rest-status { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
-        .rest-days { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
-        .next-threshold { font-size: 0.9rem; color: #666; }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .ctrl-btn { border: none; padding: 20px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; touch-action: manipulation; }
         .btn-minus { background: #e0e0e0; color: #333; }
-        .btn-plus { background: var(--primary); color: white; font-weight: bold; box-shadow: 0 4px 0 #00332a; }
+        .btn-plus { background: var(--primary); color: var(--secondary); font-weight: bold; box-shadow: 0 4px 0 #1a1410; }
         .btn-plus:active { transform: translateY(4px); box-shadow: none; }
         .reset-btn { margin-top: 20px; background: transparent; border: 1px solid #ccc; color: #888; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
-        .gc-link-card { background: var(--card-bg); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 25px; }
-        .gc-logo { color: var(--gc-blue); font-weight: 900; font-size: 1.5rem; margin-bottom: 10px; display: block; }
-        .gc-button { background: var(--gc-blue); color: white; text-decoration: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(0,134,209,0.3); transition: transform 0.2s; }
-        .gc-button:active { transform: scale(0.98); }
-        .game-list { list-style: none; padding: 0; margin: 0; }
-        .game-item { background: white; border-bottom: 1px solid #eee; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
-        .game-item:last-child { border-bottom: none; }
-        .game-date { font-weight: bold; color: var(--primary); font-size: 0.9rem; width: 60px; text-align: center; line-height: 1.2; }
-        .game-info { flex: 1; padding-left: 15px; }
-        .game-opponent { font-weight: 600; font-size: 1.1rem; margin-bottom: 2px; }
-        .game-meta { font-size: 0.85rem; color: #666; }
-        .schedule-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .status-0 { color: var(--safe); }
-        .status-1 { color: var(--warning); }
-        .status-2 { color: #f57f17; }
-        .status-3 { color: #e65100; }
-        .status-4 { color: var(--accent); }
+
+        /* LINEUP CARD */
+        .lineup-list { list-style: none; padding: 0; margin: 0; }
+        .lineup-item { background: white; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 10px; }
+        .player-info { flex: 1; }
+        .player-name { font-weight: bold; color: var(--primary); }
+        .player-num { font-size: 0.8rem; color: #888; margin-left: 5px; }
+        .pos-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; font-weight: bold; color: #333; }
+        .move-btn { background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: 0 5px; }
+        .move-btn:hover { color: var(--primary); }
+
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>Bronco Manager</h1>
-        <p>Escondido Youth Baseball</p>
+        <h1>Padres Manager</h1>
+        <p>Bronco Division</p>
     </div>
 
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('rules')">📖 Rules</button>
+        <button class="tab-btn active" onclick="switchTab('lineup')">📋 Lineup</button>
+        <button class="tab-btn" onclick="switchTab('rules')">📖 Rules</button>
         <button class="tab-btn" onclick="switchTab('counter')">⚾ Pitching</button>
         <button class="tab-btn" onclick="switchTab('schedule')">📅 Schedule</button>
     </div>
 
-    <div id="view-rules" class="view-section active">
+    <div id="view-lineup" class="view-section active">
+        <div class="stat-card" style="margin-bottom: 20px;">
+            <h3>Lineup Card</h3>
+            <div style="font-size: 0.9rem; color: white; opacity: 0.9;">
+                Set your batting order & positions.
+            </div>
+        </div>
+        
+        <ul class="lineup-list" id="lineupContainer">
+            </ul>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="reset-btn" onclick="resetPositions()">Clear Positions</button>
+        </div>
+    </div>
+
+    <div id="view-rules" class="view-section">
         <div class="dashboard">
             <div class="stat-card alert">
                 <h3>Max Pitches</h3>
@@ -99,25 +121,24 @@
             </div>
             <div class="stat-card">
                 <h3>Mercy Rule</h3>
-                <div class="value">10 run / 5 inn</div>
+                <div class="value">10 run</div>
             </div>
             <div class="stat-card">
                 <h3>Min Play</h3>
-                <div class="value">Sit 1 / All 1</div>
+                <div class="value">Sit 1/All 1</div>
             </div>
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search rules (e.g. 'subs', 'mound')...">
+            <input type="text" id="searchInput" placeholder="Search rules...">
         </div>
 
         <div class="filters" id="filterContainer">
             <button class="filter-btn active" onclick="filterRules('All')">All</button>
             <button class="filter-btn" onclick="filterRules('Pitching')">Pitching</button>
-            <button class="filter-btn" onclick="filterRules('Game Time')">Time/Mercy</button>
+            <button class="filter-btn" onclick="filterRules('Game Time')">Time</button>
             <button class="filter-btn" onclick="filterRules('Roster & Batting')">Roster</button>
             <button class="filter-btn" onclick="filterRules('Base Running')">Running</button>
-            <button class="filter-btn" onclick="filterRules('Field Prep')">Field Prep</button>
         </div>
 
         <div id="rulesContainer"></div>
@@ -125,163 +146,187 @@
 
     <div id="view-counter" class="view-section">
         <div class="counter-card">
-            <div class="pitch-label">Current Pitch Count</div>
-            <div class="pitch-display status-0" id="countDisplay">0</div>
+            <div style="color: #666; font-size: 0.9rem; text-transform: uppercase;">Current Count</div>
+            <div class="pitch-display" id="countDisplay">0</div>
             
             <div class="rest-status">
-                <span class="rest-days" id="restDisplay">0 Days Rest</span>
-                <span class="next-threshold" id="thresholdDisplay">20 pitches until 1 Day Rest</span>
+                <span style="font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block;" id="restDisplay">0 Days Rest</span>
+                <span style="font-size: 0.9rem; color: #666;" id="thresholdDisplay">20 pitches until 1 Day Rest</span>
             </div>
 
             <div class="controls">
                 <button class="ctrl-btn btn-minus" onclick="updatePitch(-1)">−</button>
                 <button class="ctrl-btn btn-plus" onclick="updatePitch(1)">+ Pitch</button>
             </div>
-
-            <button class="reset-btn" onclick="if(confirm('Reset counter to 0?')) { updatePitch(-999); }">Reset Counter</button>
+            <button class="reset-btn" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
         </div>
         
         <div style="margin-top: 20px; font-size: 0.85rem; color: #666; padding: 0 10px;">
-            <strong>Bronco (11-12) Rest Rules:</strong><br>
-            • 1-20: 0 Days<br>
-            • 21-35: 1 Day<br>
-            • 36-50: 2 Days<br>
-            • 51-65: 3 Days<br>
-            • 66+: 4 Days<br>
-            • <strong>MAX: 85</strong>
+            <strong>Rest Rules (11-12):</strong> 1-20 (0 Days), 21-35 (1 Day), 36-50 (2 Days), 51-65 (3 Days), 66+ (4 Days). <strong>Max 85.</strong>
         </div>
     </div>
 
     <div id="view-schedule" class="view-section">
-        <div class="gc-link-card">
-            <span class="gc-logo">GameChanger</span>
-            <p>View full roster, stats, and live stream.</p>
-            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" class="gc-button">
-                Open Team Schedule
-            </a>
+        <div class="rule-card" style="text-align: center; border-left: none;">
+            <h2 style="justify-content: center; margin-bottom: 10px;">GameChanger</h2>
+            <p>View full roster & live stream.</p>
+            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block; margin-top: 10px;">Open Schedule</a>
         </div>
 
-        <h3 style="margin-left: 10px; color: #555;">Upcoming Games (Manual)</h3>
-        <div class="schedule-container">
-            <ul class="game-list" id="manualGamesList">
-                </ul>
-        </div>
-        <p style="text-align: center; color: #999; font-size: 0.8rem; margin-top: 15px;">
-            Edit <code>data.js</code> to update this list.
-        </p>
+        <h3 style="margin-left: 10px; color: var(--primary);">Upcoming (Manual)</h3>
+        <ul style="list-style: none; padding: 0;" id="manualGamesList"></ul>
     </div>
 </div>
 
 <script src="data.js"></script>
-
 <script>
     // --- APP LOGIC ---
 
-    // 1. INIT: Render Rules & Games (Using data from data.js)
-    const rulesContainer = document.getElementById('rulesContainer');
-    const searchInput = document.getElementById('searchInput');
-    const manualGamesList = document.getElementById('manualGamesList');
-    let currentCategory = 'All';
-
-    // Verify data.js loaded
-    if (typeof broncoRules === 'undefined') {
-        alert("Error: data.js not loaded. Check file path.");
-    } else {
+    // 1. DATA CHECK & INIT
+    if (typeof broncoRules === 'undefined') { alert("Error: data.js not loaded."); }
+    else {
         renderRules(broncoRules);
         renderGames(manualGames);
+        initLineup(); // Initialize Roster
     }
+
+    // --- LINEUP LOGIC ---
+    let currentRosterOrder = [...teamRoster]; // Copy from data.js
+    
+    function initLineup() {
+        renderLineup();
+    }
+
+    function renderLineup() {
+        const container = document.getElementById('lineupContainer');
+        container.innerHTML = currentRosterOrder.map((player, index) => `
+            <li class="lineup-item">
+                <div style="display:flex; align-items:center;">
+                    <div class="player-order">${index + 1}</div>
+                    <div class="player-info">
+                        <span class="player-name">${player.name}</span>
+                        <span class="player-num">${player.number}</span>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap: 5px;">
+                    <select class="pos-select">
+                        <option value="">Pos</option>
+                        <option value="P">P</option>
+                        <option value="C">C</option>
+                        <option value="1B">1B</option>
+                        <option value="2B">2B</option>
+                        <option value="3B">3B</option>
+                        <option value="SS">SS</option>
+                        <option value="LF">LF</option>
+                        <option value="CF">CF</option>
+                        <option value="RF">RF</option>
+                        <option value="BN">Bench</option>
+                    </select>
+                    <div style="display:flex; flex-direction:column;">
+                        <button class="move-btn" onclick="movePlayer(${index}, -1)">▲</button>
+                        <button class="move-btn" onclick="movePlayer(${index}, 1)">▼</button>
+                    </div>
+                </div>
+            </li>
+        `).join('');
+    }
+
+    function movePlayer(index, direction) {
+        if (direction === -1 && index === 0) return; // Can't move top up
+        if (direction === 1 && index === currentRosterOrder.length - 1) return; // Can't move bottom down
+        
+        // Swap elements
+        const temp = currentRosterOrder[index];
+        currentRosterOrder[index] = currentRosterOrder[index + direction];
+        currentRosterOrder[index + direction] = temp;
+        
+        renderLineup();
+    }
+
+    function resetPositions() {
+        document.querySelectorAll('.pos-select').forEach(select => select.value = "");
+    }
+
+
+    // --- RULES LOGIC ---
+    const rulesContainer = document.getElementById('rulesContainer');
+    const searchInput = document.getElementById('searchInput');
+    let currentCategory = 'All';
 
     function renderRules(rules) {
         rulesContainer.innerHTML = rules.map(rule => `
             <div class="rule-card ${rule.important ? 'important' : ''}">
                 <h2>${rule.title} <span class="category-tag">${rule.category}</span></h2>
                 <p>${rule.content}</p>
-                <div class="source">Source: ${rule.source}</div>
             </div>
         `).join('');
     }
 
+    function filterRules(category) {
+        currentCategory = category;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === category || (category === 'Time' && btn.innerText === 'Time')));
+        
+        const query = searchInput.value.toLowerCase();
+        const filtered = broncoRules.filter(rule => {
+            const matchesCategory = currentCategory === 'All' || rule.category === currentCategory || (currentCategory === 'Time' && rule.category === 'Game Time');
+            const matchesSearch = rule.title.toLowerCase().includes(query) || rule.content.toLowerCase().includes(query);
+            return matchesCategory && matchesSearch;
+        });
+        renderRules(filtered);
+    }
+    searchInput.addEventListener('input', () => filterRules(currentCategory));
+
+    // --- SCHEDULE LOGIC ---
     function renderGames(games) {
-        manualGamesList.innerHTML = games.map(game => `
-            <li class="game-item">
-                <div class="game-date">${game.date}</div>
-                <div class="game-info">
-                    <div class="game-opponent">${game.opponent}</div>
-                    <div class="game-meta">${game.info}</div>
+        document.getElementById('manualGamesList').innerHTML = games.map(game => `
+            <li class="lineup-item" style="border-left: 4px solid var(--secondary);">
+                <div style="font-weight:bold; color:var(--primary); text-align:center; width:50px; line-height:1.2;">${game.date}</div>
+                <div style="margin-left:15px;">
+                    <div style="font-weight:bold; font-size:1.1rem;">${game.opponent}</div>
+                    <div style="color:#666; font-size:0.85rem;">${game.info}</div>
                 </div>
             </li>
         `).join('');
     }
 
-    // 2. SEARCH & FILTER
-    function filterRules(category) {
-        currentCategory = category;
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText === category || (category === 'Time/Mercy' && btn.innerText === 'Time/Mercy'));
-        });
-        applyFilters();
-    }
-
-    function applyFilters() {
-        const query = searchInput.value.toLowerCase();
-        const filtered = broncoRules.filter(rule => {
-            const matchesCategory = currentCategory === 'All' || rule.category === currentCategory;
-            const matchesSearch = rule.title.toLowerCase().includes(query) || 
-                                  rule.content.toLowerCase().includes(query) ||
-                                  rule.category.toLowerCase().includes(query);
-            return matchesCategory && matchesSearch;
-        });
-        renderRules(filtered);
-    }
-    searchInput.addEventListener('input', applyFilters);
-
-    // 3. TAB LOGIC
+    // --- TAB LOGIC ---
     function switchTab(tabId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-' + tabId).classList.add('active');
         
-        const tabMap = { 'rules': 0, 'counter': 1, 'schedule': 2 };
-        document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
+        const tabMap = { 'lineup': 0, 'rules': 1, 'counter': 2, 'schedule': 3 };
+        if(document.querySelectorAll('.tab-btn')[tabMap[tabId]]) {
+            document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
+        }
     }
 
-    // 4. PITCH COUNTER LOGIC
+    // --- PITCH COUNTER LOGIC ---
     let pitchCount = 0;
-    
     function updatePitch(change) {
-        if (change === -999) pitchCount = 0;
-        else pitchCount += change;
+        if (change === -999) pitchCount = 0; else pitchCount += change;
         if (pitchCount < 0) pitchCount = 0;
         
-        const countDisplay = document.getElementById('countDisplay');
-        const restDisplay = document.getElementById('restDisplay');
-        const thresholdDisplay = document.getElementById('thresholdDisplay');
+        document.getElementById('countDisplay').innerText = pitchCount;
         
-        countDisplay.innerText = pitchCount;
-
-        // Use thresholds from data.js
-        let currentStatus = pitchThresholds[0];
-        let nextThreshold = pitchThresholds[0].limit;
-        let colorClass = "status-0";
-
-        // Simple logic for standard thresholds
-        if (pitchCount > 65) { currentStatus = pitchThresholds[4]; nextThreshold = 85; colorClass = "status-4"; }
-        else if (pitchCount > 50) { currentStatus = pitchThresholds[3]; nextThreshold = 65; colorClass = "status-3"; }
-        else if (pitchCount > 35) { currentStatus = pitchThresholds[2]; nextThreshold = 50; colorClass = "status-2"; }
-        else if (pitchCount > 20) { currentStatus = pitchThresholds[1]; nextThreshold = 35; colorClass = "status-1"; }
+        let status = pitchThresholds[0];
+        let next = pitchThresholds[0].limit;
+        
+        if (pitchCount > 65) { status = pitchThresholds[4]; next = 85; }
+        else if (pitchCount > 50) { status = pitchThresholds[3]; next = 65; }
+        else if (pitchCount > 35) { status = pitchThresholds[2]; next = 50; }
+        else if (pitchCount > 20) { status = pitchThresholds[1]; next = 35; }
 
         if (pitchCount >= 85) {
-            restDisplay.innerText = "MAX LIMIT REACHED";
-            thresholdDisplay.innerText = "Finish current batter only.";
-            colorClass = "status-4";
+            document.getElementById('restDisplay').innerText = "MAX LIMIT";
+            document.getElementById('thresholdDisplay').innerText = "Finish batter only";
         } else {
-            restDisplay.innerText = currentStatus.rest + " Rest Required";
-            const pitchesLeft = nextThreshold - pitchCount;
-            thresholdDisplay.innerText = `${pitchesLeft} pitches until ${currentStatus.next} Rest`;
+            document.getElementById('restDisplay').innerText = status.rest + " Rest";
+            document.getElementById('thresholdDisplay').innerText = `${next - pitchCount} until ${status.next} Rest`;
         }
-        countDisplay.className = `pitch-display ${colorClass}`;
     }
-    updatePitch(0); // Init
+    updatePitch(0);
+
 </script>
 </body>
 </html>
