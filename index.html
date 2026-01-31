@@ -37,11 +37,11 @@
         .view-section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LINEUP CARD (UPDATED FOR SCROLLING) */
+        /* LINEUP CARD */
         .lineup-list { list-style: none; padding: 0; margin: 0; }
         .lineup-item { 
             background: white; 
-            padding: 8px 10px; /* Reduced padding for shorter squares */
+            padding: 8px 10px; 
             margin-bottom: 6px; 
             border-radius: 8px; 
             display: flex; 
@@ -49,31 +49,50 @@
             justify-content: space-between; 
             border-left: 5px solid var(--primary); 
             box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
-            /* Critical for scrolling vs dragging */
-            touch-action: pan-y; 
+            touch-action: pan-y; /* Allows scrolling */
         }
-        .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-right: 10px; flex-shrink: 0; }
-        .player-info { flex: 1; display: flex; align-items: center; }
-        .player-name { font-weight: bold; color: var(--primary); font-size: 0.95rem; margin-right: 5px; }
-        .player-num { font-size: 0.8rem; color: #888; }
+        .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-right: 8px; flex-shrink: 0; }
+        .player-info { flex: 1; display: flex; align-items: center; overflow: hidden; }
+        .player-name { font-weight: bold; color: var(--primary); font-size: 0.95rem; margin-right: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .player-num { font-size: 0.8rem; color: #888; flex-shrink: 0; }
         
+        /* Lineup Position Select */
+        .pos-select-lineup {
+            padding: 5px 2px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f9f9f9;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.85rem;
+            width: 50px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
         .drag-handle { 
             color: #ccc; 
             font-size: 1.4rem; 
-            padding: 10px 15px; 
-            margin-right: -10px;
+            padding: 5px 10px; 
+            margin-right: -5px;
             cursor: grab; 
-            touch-action: none; /* Only the handle prevents scrolling */
+            touch-action: none; 
         }
 
-        /* FIELDING MATRIX (NEW) */
-        .fielding-container { overflow-x: auto; -webkit-overflow-scrolling: touch; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .fielding-table { width: 100%; border-collapse: collapse; min-width: 500px; /* Forces scroll on mobile */ }
+        /* FIELDING MATRIX */
+        .fielding-container { overflow-x: auto; -webkit-overflow-scrolling: touch; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 5px; }
+        .fielding-table { width: 100%; border-collapse: collapse; min-width: 500px; }
         .fielding-table th { background: var(--primary); color: white; padding: 8px; font-size: 0.8rem; text-align: center; position: sticky; left: 0; z-index: 10; }
         .fielding-table th:not(:first-child) { background: #443a33; position: static; }
         .fielding-table td { border-bottom: 1px solid #eee; padding: 5px; text-align: center; }
-        .fielding-table td:first-child { position: sticky; left: 0; background: white; z-index: 5; font-weight: bold; font-size: 0.8rem; border-right: 2px solid #eee; text-align: left; padding-left: 10px; min-width: 80px; }
-        .pos-select-small { width: 100%; padding: 5px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; background: #fff; text-align: center; font-weight: bold; color: #333; }
+        /* Sticky First Column */
+        .fielding-table td:first-child { 
+            position: sticky; left: 0; background: white; z-index: 5; 
+            font-weight: bold; font-size: 0.8rem; border-right: 2px solid #eee; 
+            text-align: left; padding-left: 10px; min-width: 90px; 
+            color: var(--primary);
+        }
+        .pos-select-small { width: 100%; padding: 6px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; background: #fff; text-align: center; font-weight: bold; color: #333; }
         
         /* BINGO STYLES */
         .bingo-wrapper { display: flex; flex-direction: column; align-items: center; }
@@ -158,7 +177,7 @@
 
     <div id="view-fielding" class="view-section">
         <div style="margin-bottom: 10px; font-size: 0.9rem; color: #555; text-align: center;">
-            Assign positions by Inning. Auto-saves.
+            Order matches Lineup tab. Auto-saves.
         </div>
         <div class="fielding-container">
             <table class="fielding-table" id="fieldingTable">
@@ -269,6 +288,7 @@
        ========================================= */
     let currentRosterOrder = [];
     let fieldingData = {}; // Stores { playerName: [pos1, pos2, ... pos6] }
+    const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
 
     window.onload = function() {
         initLineup();
@@ -276,26 +296,28 @@
         renderRules(broncoRules);
         initBingo();
         
-        // Init Sortable (Drag & Drop) with Handle
         new Sortable(document.getElementById('lineupContainer'), {
-            handle: '.drag-handle', // Only drag by handle
+            handle: '.drag-handle',
             animation: 150,
             onEnd: function (evt) {
                 const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
                 currentRosterOrder.splice(evt.newIndex, 0, movedItem);
                 saveLineup();
                 renderLineup();
+                // We do NOT immediately renderFielding here to save performance, 
+                // but we will update it when the tab is clicked.
             }
         });
     };
 
     // --- LINEUP LOGIC ---
     function initLineup() {
-        const saved = localStorage.getItem('broncoLineup_v4');
+        const saved = localStorage.getItem('broncoLineup_v5');
         if (saved) {
             currentRosterOrder = JSON.parse(saved);
         } else {
-            currentRosterOrder = teamRoster.map(p => ({...p})); // Clone
+            // Include 'pos' for lineup card specific position
+            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); 
         }
         renderLineup();
     }
@@ -304,25 +326,36 @@
         const container = document.getElementById('lineupContainer');
         container.innerHTML = currentRosterOrder.map((player, index) => `
             <li class="lineup-item">
-                <div style="display:flex; align-items:center;">
+                <div style="display:flex; align-items:center; flex:1; min-width:0;">
                     <div class="player-order">${index + 1}</div>
                     <div class="player-info">
                         <span class="player-name">${player.name}</span>
                         <span class="player-num">${player.number}</span>
                     </div>
                 </div>
-                <div class="drag-handle">≡</div>
+                <div style="display:flex; align-items:center;">
+                    <select class="pos-select-lineup" onchange="updateLineupPos(${index}, this.value)">
+                        <option value="" ${player.pos===""?'selected':''}>-</option>
+                        ${POSITIONS.slice(1).map(p => `<option value="${p}" ${player.pos===p?'selected':''}>${p}</option>`).join('')}
+                    </select>
+                    <div class="drag-handle">≡</div>
+                </div>
             </li>
         `).join('');
     }
 
+    function updateLineupPos(index, value) {
+        currentRosterOrder[index].pos = value;
+        saveLineup();
+    }
+
     function saveLineup() {
-        localStorage.setItem('broncoLineup_v4', JSON.stringify(currentRosterOrder));
+        localStorage.setItem('broncoLineup_v5', JSON.stringify(currentRosterOrder));
     }
 
     function resetLineup() {
-        if(confirm("Reset lineup order?")) {
-            currentRosterOrder = teamRoster.map(p => ({...p}));
+        if(confirm("Reset batting order?")) {
+            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
             saveLineup();
             renderLineup();
         }
@@ -331,7 +364,8 @@
     function shareLineup() {
         let text = "⚾ Padres Lineup:\n";
         currentRosterOrder.forEach((p, i) => {
-            text += `${i+1}. ${p.name} ${p.number}\n`;
+            let pos = p.pos ? `(${p.pos})` : "";
+            text += `${i+1}. ${p.name} ${p.number} ${pos}\n`;
         });
         
         if (navigator.share) {
@@ -342,15 +376,12 @@
         }
     }
 
-    // --- FIELDING MATRIX LOGIC (NEW) ---
-    const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
-    
+    // --- FIELDING MATRIX LOGIC ---
     function initFielding() {
         const savedFielding = localStorage.getItem('broncoFielding_v1');
         if (savedFielding) {
             fieldingData = JSON.parse(savedFielding);
         } else {
-            // Init empty
             teamRoster.forEach(p => {
                 fieldingData[p.name] = ["", "", "", "", "", ""];
             });
@@ -364,7 +395,7 @@
         for(let i=1; i<=6; i++) html += `<th>Inn ${i}</th>`;
         html += `</tr></thead><tbody>`;
 
-        // Use currentRosterOrder so the fielding table matches lineup order
+        // Iterate through CURRENT batting order so table matches lineup
         currentRosterOrder.forEach(player => {
             if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", ""];
             
@@ -399,7 +430,7 @@
         }
     }
 
-    // --- BINGO LOGIC ---
+    // --- BINGO, RULES, PITCH COUNTER & TABS ---
     const baseballTerms = [
         "Home Run", "My Kid Strikes Out", "Walk-In Run", "Out", "Foul Ball Out",
         "Double", "Triple", "Grand Slam", "Walk", "Pitcher Cries",
@@ -407,17 +438,11 @@
         "Error", "RBI", "Dad Kicked Out", "Terrible Call", "Tie Shoes",
         "Hit By Pitch", "No Glove On", "Oven Mitt", "No Game Balls", "Wild Pitch"
     ];
-    
     function initBingo() {
         const savedTerms = localStorage.getItem('bingoTerms');
-        if (savedTerms) {
-            createBingoCard(JSON.parse(savedTerms));
-        } else {
-            newBingoCard();
-        }
+        if (savedTerms) createBingoCard(JSON.parse(savedTerms)); else newBingoCard();
         document.getElementById('bingoResetBtn').addEventListener('click', newBingoCard);
     }
-
     function createBingoCard(terms) {
         const bingoCard = document.getElementById('bingoCard');
         bingoCard.innerHTML = '';
@@ -437,7 +462,6 @@
             }
         }
     }
-
     function newBingoCard() {
         let array = [...baseballTerms];
         for (let i = array.length - 1; i > 0; i--) {
@@ -449,7 +473,6 @@
         createBingoCard(currentTerms);
     }
 
-    // --- RULES & FILTERS ---
     function renderRules(rules) {
         document.getElementById('rulesContainer').innerHTML = rules.map(rule => `
             <div class="rule-card ${rule.important ? 'important' : ''}">
@@ -458,7 +481,6 @@
             </div>
         `).join('');
     }
-
     function filterRules(category) {
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === category));
         const query = document.getElementById('searchInput').value.toLowerCase();
@@ -471,15 +493,8 @@
     }
     document.getElementById('searchInput').addEventListener('input', () => filterRules('All'));
 
-    // --- PITCH COUNTER LOGIC ---
     let pitchCount = 0;
-    const pitchThresholds = [
-        { limit: 20, rest: "0 Days", next: "1 Day" },
-        { limit: 35, rest: "1 Day", next: "2 Days" },
-        { limit: 50, rest: "2 Days", next: "3 Days" },
-        { limit: 65, rest: "3 Days", next: "4 Days" },
-        { limit: 85, rest: "4 Days", next: "MAX" }
-    ];
+    const pitchThresholds = [ { limit: 20, rest: "0 Days", next: "1 Day" }, { limit: 35, rest: "1 Day", next: "2 Days" }, { limit: 50, rest: "2 Days", next: "3 Days" }, { limit: 65, rest: "3 Days", next: "4 Days" }, { limit: 85, rest: "4 Days", next: "MAX" } ];
     function updatePitch(change) {
         if (change === -999) pitchCount = 0; else pitchCount += change;
         if (pitchCount < 0) pitchCount = 0;
@@ -490,7 +505,6 @@
         else if (pitchCount > 50) { status = pitchThresholds[3]; next = 65; }
         else if (pitchCount > 35) { status = pitchThresholds[2]; next = 50; }
         else if (pitchCount > 20) { status = pitchThresholds[1]; next = 35; }
-
         if (pitchCount >= 85) {
             document.getElementById('restDisplay').innerText = "MAX LIMIT";
             document.getElementById('thresholdDisplay').innerText = "Finish batter only";
@@ -500,7 +514,6 @@
         }
     }
 
-    // --- TAB LOGIC ---
     function switchTab(tabId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -509,6 +522,8 @@
         if(document.querySelectorAll('.tab-btn')[tabMap[tabId]]) {
             document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
         }
+        // Force re-render of fielding table to ensure it matches current lineup order
+        if(tabId === 'fielding') renderFielding();
     }
 </script>
 </body>
