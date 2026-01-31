@@ -10,95 +10,104 @@
             /* PADRES THEME */
             --primary: #2F241D; /* Padres Brown */
             --secondary: #FFC425; /* Padres Gold */
-            --bg: #f8f8f8;
+            --bg: #f4f4f4;
             --card-bg: #ffffff;
             --text: #2F241D;
             --warning: #d32f2f;
             --gc-blue: #0086d1;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 80px; }
-        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 10px; }
         
         /* HEADER IMAGE */
         .header-img {
             width: 100%;
             height: auto;
             display: block;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border-bottom: 4px solid var(--secondary);
         }
 
         /* NAV TABS */
-        .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; gap: 5px; }
-        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 2px; font-size: 0.75rem; font-weight: bold; color: #ccc; border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; text-align: center; }
+        .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 15px; position: sticky; top: 5px; z-index: 100; gap: 3px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 2px; font-size: 0.7rem; font-weight: bold; color: #ccc; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; text-align: center; }
         .tab-btn.active { background: var(--secondary); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LINEUP CARD */
+        /* LINEUP CARD (UPDATED FOR SCROLLING) */
         .lineup-list { list-style: none; padding: 0; margin: 0; }
-        .lineup-item { background: white; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border-left: 6px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); touch-action: none; /* Prevents scroll while dragging */ }
-        .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-right: 10px; flex-shrink: 0; }
-        .player-info { flex: 1; pointer-events: none; /* Allows drag on text area */ }
-        .player-name { font-weight: bold; color: var(--primary); font-size: 1rem; display: block; }
-        .player-num { font-size: 0.8rem; color: #888; }
-        .pos-select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; background: #f0f0f0; font-weight: bold; color: #333; font-size: 1rem; margin-right: 10px; }
-        .drag-handle { color: #ccc; font-size: 1.5rem; padding: 0 10px; cursor: grab; }
-        
-        .reset-btn { margin-top: 20px; background: white; border: 1px solid #ccc; color: #333; padding: 12px 25px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; display: block; margin-left: auto; margin-right: auto; }
-
-        /* BINGO STYLES (UPDATED) */
-        .bingo-wrapper { display: flex; flex-direction: column; align-items: center; }
-        .bingo-card { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 3px; 
-            width: 100%; 
-            background-color: var(--primary); /* Padres Brown Background */
-            border: 3px solid var(--secondary); /* Padres Gold Border */
-            padding: 3px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
-            margin-top: 10px; 
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-        .bingo-square { 
-            background-color: #fff; 
-            padding: 2px; 
-            text-align: center; 
-            font-size: 0.6rem; 
-            cursor: pointer; 
-            user-select: none; 
+        .lineup-item { 
+            background: white; 
+            padding: 8px 10px; /* Reduced padding for shorter squares */
+            margin-bottom: 6px; 
+            border-radius: 8px; 
             display: flex; 
             align-items: center; 
-            justify-content: center; 
-            aspect-ratio: 1 / 1; /* Keeps squares perfect square on any phone */
-            word-break: break-word; 
-            line-height: 1.1; 
-            font-weight: 600; 
-            color: var(--primary);
-            border-radius: 2px;
+            justify-content: space-between; 
+            border-left: 5px solid var(--primary); 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
+            /* Critical for scrolling vs dragging */
+            touch-action: pan-y; 
         }
-        .bingo-square.checked { 
-            background-color: var(--secondary); /* Gold Background */
-            color: var(--primary); /* Brown Text */
-            border: 1px solid var(--primary);
-            opacity: 1; 
+        .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-right: 10px; flex-shrink: 0; }
+        .player-info { flex: 1; display: flex; align-items: center; }
+        .player-name { font-weight: bold; color: var(--primary); font-size: 0.95rem; margin-right: 5px; }
+        .player-num { font-size: 0.8rem; color: #888; }
+        
+        .drag-handle { 
+            color: #ccc; 
+            font-size: 1.4rem; 
+            padding: 10px 15px; 
+            margin-right: -10px;
+            cursor: grab; 
+            touch-action: none; /* Only the handle prevents scrolling */
         }
+
+        /* FIELDING MATRIX (NEW) */
+        .fielding-container { overflow-x: auto; -webkit-overflow-scrolling: touch; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .fielding-table { width: 100%; border-collapse: collapse; min-width: 500px; /* Forces scroll on mobile */ }
+        .fielding-table th { background: var(--primary); color: white; padding: 8px; font-size: 0.8rem; text-align: center; position: sticky; left: 0; z-index: 10; }
+        .fielding-table th:not(:first-child) { background: #443a33; position: static; }
+        .fielding-table td { border-bottom: 1px solid #eee; padding: 5px; text-align: center; }
+        .fielding-table td:first-child { position: sticky; left: 0; background: white; z-index: 5; font-weight: bold; font-size: 0.8rem; border-right: 2px solid #eee; text-align: left; padding-left: 10px; min-width: 80px; }
+        .pos-select-small { width: 100%; padding: 5px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; background: #fff; text-align: center; font-weight: bold; color: #333; }
+        
+        /* BINGO STYLES */
+        .bingo-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .bingo-card { 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; max-width: 400px; 
+            background-color: var(--primary); border: 3px solid var(--secondary); padding: 3px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 10px; border-radius: 8px; box-sizing: border-box;
+        }
+        .bingo-square { 
+            background-color: #fff; padding: 2px; text-align: center; font-size: 0.6rem; cursor: pointer; user-select: none; 
+            display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; 
+            word-break: break-word; line-height: 1.1; font-weight: 600; color: var(--primary); border-radius: 2px;
+        }
+        .bingo-square.checked { background-color: var(--secondary); color: var(--primary); opacity: 1; }
         .center-square { 
             background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); 
-            background-size: 80%; 
-            background-repeat: no-repeat; 
-            background-position: center; 
-            background-color: white;
-            pointer-events: none; 
+            background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; 
         }
+
+        /* BUTTONS */
+        .action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; }
+        .btn-share { background: var(--secondary); color: var(--primary); }
+        .btn-reset { background: white; border: 1px solid #ccc; color: #666; font-size: 0.9rem; }
         .venmo-link { margin-top: 15px; text-align: center; font-weight: bold; }
         .venmo-link a { color: #007bff; text-decoration: none; }
 
-        /* SHARED & OTHER VIEWS */
+        /* SCHEDULE STYLES */
+        .schedule-list { list-style: none; padding: 0; }
+        .schedule-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--secondary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .sched-date { font-weight: bold; color: var(--primary); font-size: 0.9rem; margin-bottom: 5px; }
+        .sched-title { font-size: 1.1rem; font-weight: bold; }
+        .sched-loc { color: #666; font-size: 0.9rem; }
+
+        /* SHARED VIEWS */
         .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
         .stat-card { background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--secondary); }
         .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; color: var(--secondary); }
@@ -130,26 +139,39 @@
 <div class="container">
     
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('lineup')">📋 Lineup</button>
-        <button class="tab-btn" onclick="switchTab('bingo')">🎰 Bingo</button>
-        <button class="tab-btn" onclick="switchTab('rules')">📖 Rules</button>
-        <button class="tab-btn" onclick="switchTab('counter')">⚾ Pitch</button>
-        <button class="tab-btn" onclick="switchTab('schedule')">📅 Sched</button>
+        <button class="tab-btn active" onclick="switchTab('lineup')">Lineup</button>
+        <button class="tab-btn" onclick="switchTab('fielding')">Fielding</button>
+        <button class="tab-btn" onclick="switchTab('bingo')">Bingo</button>
+        <button class="tab-btn" onclick="switchTab('rules')">Rules</button>
+        <button class="tab-btn" onclick="switchTab('counter')">Pitch</button>
+        <button class="tab-btn" onclick="switchTab('schedule')">Sched</button>
     </div>
 
     <div id="view-lineup" class="view-section active">
-        <div style="background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-size: 0.8rem; color: #666;">
-            <strong>Drag & Drop</strong> to reorder. Positions save automatically.
+        <div style="background: #fff; padding: 8px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-size: 0.8rem; color: #666;">
+            Touch <strong>≡</strong> to drag.
         </div>
         <ul class="lineup-list" id="lineupContainer"></ul>
-        <button class="reset-btn" onclick="resetLineup()">Reset Order & Positions</button>
+        <button class="action-btn btn-share" onclick="shareLineup()">Share Lineup 📤</button>
+        <button class="action-btn btn-reset" onclick="resetLineup()">Reset Order</button>
+    </div>
+
+    <div id="view-fielding" class="view-section">
+        <div style="margin-bottom: 10px; font-size: 0.9rem; color: #555; text-align: center;">
+            Assign positions by Inning. Auto-saves.
+        </div>
+        <div class="fielding-container">
+            <table class="fielding-table" id="fieldingTable">
+                </table>
+        </div>
+        <button class="action-btn btn-reset" onclick="resetFielding()">Clear All Positions</button>
     </div>
 
     <div id="view-bingo" class="view-section">
         <div class="bingo-wrapper">
             <h2 style="color: var(--primary); margin:0 0 10px 0;">Game Time Bingo!</h2>
             <div class="bingo-card" id="bingoCard"></div>
-            <button class="reset-btn" id="bingoResetBtn" style="margin-top: 20px; background: var(--primary); color: var(--secondary); font-weight: bold; border: none;">New Card</button>
+            <button class="action-btn btn-share" id="bingoResetBtn" style="margin-top: 20px;">New Card</button>
             <div class="venmo-link"><a href="https://venmo.com/jwyld" target="_blank">Donate</a></div>
         </div>
     </div>
@@ -183,23 +205,38 @@
                 <button class="ctrl-btn btn-minus" onclick="updatePitch(-1)">−</button>
                 <button class="ctrl-btn btn-plus" onclick="updatePitch(1)">+ Pitch</button>
             </div>
-            <button class="reset-btn" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
+            <button class="action-btn btn-reset" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
         </div>
     </div>
 
     <div id="view-schedule" class="view-section">
         <div class="rule-card" style="text-align: center; border-left: none;">
             <h2 style="justify-content: center; margin-bottom: 10px;">GameChanger</h2>
-            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">Open Schedule</a>
+            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">Open Team Schedule</a>
         </div>
-        <h3 style="margin-left: 10px; color: var(--primary);">Upcoming (Manual)</h3>
-        <ul style="list-style: none; padding: 0;" id="manualGamesList"></ul>
+        
+        <h3 style="margin-left: 10px; color: var(--primary);">Weekly Schedule</h3>
+        <ul class="schedule-list">
+            <li class="schedule-item">
+                <div class="sched-date">EVERY TUESDAY</div>
+                <div class="sched-title">Team Practice</div>
+                <div class="sched-loc">5:30 PM - 7:30 PM</div>
+            </li>
+        </ul>
+
+        <h3 style="margin-left: 10px; color: var(--primary);">Upcoming Games</h3>
+        <ul class="schedule-list">
+             <li class="schedule-item" style="border-left-color: #ccc;">
+                <div class="sched-title" style="color:#666; text-align: center;">TBD</div>
+                <div class="sched-loc" style="text-align: center;">No games scheduled yet.</div>
+            </li>
+        </ul>
     </div>
 </div>
 
 <script>
     /* =========================================
-       1. DATA DEFINITIONS (EMBEDDED)
+       1. DATA DEFINITIONS
        ========================================= */
     const teamRoster = [
         { name: "Jace Ingram", number: "#3" },
@@ -227,43 +264,38 @@
         { category: "Base Running", title: "Slide/Avoid", content: "Must slide or avoid contact. Malicious contact = ejection & out.", important: true }
     ];
 
-    const manualGames = [
-        { date: "SAT<br>FEB 24", opponent: "vs. Dodgers", info: "10:00 AM • Field 3 (Home)" },
-        { date: "TUE<br>FEB 27", opponent: "@ Angels", info: "5:30 PM • Field 1 (Visitor)" }
-    ];
-
     /* =========================================
        2. APP LOGIC
        ========================================= */
     let currentRosterOrder = [];
-    
-    // Init App
+    let fieldingData = {}; // Stores { playerName: [pos1, pos2, ... pos6] }
+
     window.onload = function() {
         initLineup();
+        initFielding();
         renderRules(broncoRules);
-        renderGames(manualGames);
         initBingo();
         
-        // Init Sortable (Drag & Drop)
+        // Init Sortable (Drag & Drop) with Handle
         new Sortable(document.getElementById('lineupContainer'), {
-            handle: '.lineup-item', 
+            handle: '.drag-handle', // Only drag by handle
             animation: 150,
             onEnd: function (evt) {
                 const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
                 currentRosterOrder.splice(evt.newIndex, 0, movedItem);
                 saveLineup();
-                renderLineup(); // Re-render to update numbers
+                renderLineup();
             }
         });
     };
 
     // --- LINEUP LOGIC ---
     function initLineup() {
-        const saved = localStorage.getItem('broncoLineup_v3');
+        const saved = localStorage.getItem('broncoLineup_v4');
         if (saved) {
             currentRosterOrder = JSON.parse(saved);
         } else {
-            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
+            currentRosterOrder = teamRoster.map(p => ({...p})); // Clone
         }
         renderLineup();
     }
@@ -279,40 +311,91 @@
                         <span class="player-num">${player.number}</span>
                     </div>
                 </div>
-                <div style="display:flex; align-items:center; gap: 5px;">
-                    <select class="pos-select" onchange="updatePos(${index}, this.value)">
-                        <option value="" ${player.pos===""?'selected':''}>-</option>
-                        <option value="P" ${player.pos==="P"?'selected':''}>P</option>
-                        <option value="C" ${player.pos==="C"?'selected':''}>C</option>
-                        <option value="1B" ${player.pos==="1B"?'selected':''}>1B</option>
-                        <option value="2B" ${player.pos==="2B"?'selected':''}>2B</option>
-                        <option value="3B" ${player.pos==="3B"?'selected':''}>3B</option>
-                        <option value="SS" ${player.pos==="SS"?'selected':''}>SS</option>
-                        <option value="LF" ${player.pos==="LF"?'selected':''}>LF</option>
-                        <option value="CF" ${player.pos==="CF"?'selected':''}>CF</option>
-                        <option value="RF" ${player.pos==="RF"?'selected':''}>RF</option>
-                        <option value="BN" ${player.pos==="BN"?'selected':''}>BN</option>
-                    </select>
-                    <div class="drag-handle">≡</div>
-                </div>
+                <div class="drag-handle">≡</div>
             </li>
         `).join('');
     }
 
-    function updatePos(index, value) {
-        currentRosterOrder[index].pos = value;
-        saveLineup();
-    }
-
     function saveLineup() {
-        localStorage.setItem('broncoLineup_v3', JSON.stringify(currentRosterOrder));
+        localStorage.setItem('broncoLineup_v4', JSON.stringify(currentRosterOrder));
     }
 
     function resetLineup() {
-        if(confirm("Reset lineup order and clear positions?")) {
-            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
+        if(confirm("Reset lineup order?")) {
+            currentRosterOrder = teamRoster.map(p => ({...p}));
             saveLineup();
             renderLineup();
+        }
+    }
+
+    function shareLineup() {
+        let text = "⚾ Padres Lineup:\n";
+        currentRosterOrder.forEach((p, i) => {
+            text += `${i+1}. ${p.name} ${p.number}\n`;
+        });
+        
+        if (navigator.share) {
+            navigator.share({ title: 'Bronco Padres Lineup', text: text }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(text);
+            alert("Lineup copied to clipboard!");
+        }
+    }
+
+    // --- FIELDING MATRIX LOGIC (NEW) ---
+    const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
+    
+    function initFielding() {
+        const savedFielding = localStorage.getItem('broncoFielding_v1');
+        if (savedFielding) {
+            fieldingData = JSON.parse(savedFielding);
+        } else {
+            // Init empty
+            teamRoster.forEach(p => {
+                fieldingData[p.name] = ["", "", "", "", "", ""];
+            });
+        }
+        renderFielding();
+    }
+
+    function renderFielding() {
+        const table = document.getElementById('fieldingTable');
+        let html = `<thead><tr><th>Player</th>`;
+        for(let i=1; i<=6; i++) html += `<th>Inn ${i}</th>`;
+        html += `</tr></thead><tbody>`;
+
+        // Use currentRosterOrder so the fielding table matches lineup order
+        currentRosterOrder.forEach(player => {
+            if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", ""];
+            
+            html += `<tr><td>${player.name}</td>`;
+            for(let i=0; i<6; i++) {
+                html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
+            }
+            html += `</tr>`;
+        });
+        html += `</tbody>`;
+        table.innerHTML = html;
+    }
+
+    function createPosSelect(playerName, inningIndex, currentVal) {
+        let opts = POSITIONS.map(p => `<option value="${p}" ${p===currentVal?'selected':''}>${p}</option>`).join('');
+        return `<select class="pos-select-small" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
+    }
+
+    function updateFielding(playerName, inningIndex, value) {
+        if (!fieldingData[playerName]) fieldingData[playerName] = ["", "", "", "", "", ""];
+        fieldingData[playerName][inningIndex] = value;
+        localStorage.setItem('broncoFielding_v1', JSON.stringify(fieldingData));
+    }
+
+    function resetFielding() {
+        if(confirm("Clear all positions?")) {
+            teamRoster.forEach(p => {
+                fieldingData[p.name] = ["", "", "", "", "", ""];
+            });
+            localStorage.setItem('broncoFielding_v1', JSON.stringify(fieldingData));
+            renderFielding();
         }
     }
 
@@ -366,7 +449,7 @@
         createBingoCard(currentTerms);
     }
 
-    // --- RULES & SCHEDULE LOGIC ---
+    // --- RULES & FILTERS ---
     function renderRules(rules) {
         document.getElementById('rulesContainer').innerHTML = rules.map(rule => `
             <div class="rule-card ${rule.important ? 'important' : ''}">
@@ -387,18 +470,6 @@
         renderRules(filtered);
     }
     document.getElementById('searchInput').addEventListener('input', () => filterRules('All'));
-
-    function renderGames(games) {
-        document.getElementById('manualGamesList').innerHTML = games.map(game => `
-            <li class="lineup-item" style="border-left: 4px solid var(--secondary);">
-                <div style="font-weight:bold; color:var(--primary); text-align:center; width:50px; line-height:1.2;">${game.date}</div>
-                <div style="margin-left:15px;">
-                    <div style="font-weight:bold; font-size:1.1rem;">${game.opponent}</div>
-                    <div style="color:#666; font-size:0.85rem;">${game.info}</div>
-                </div>
-            </li>
-        `).join('');
-    }
 
     // --- PITCH COUNTER LOGIC ---
     let pitchCount = 0;
@@ -434,7 +505,7 @@
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-' + tabId).classList.add('active');
-        const tabMap = { 'lineup': 0, 'bingo': 1, 'rules': 2, 'counter': 3, 'schedule': 4 };
+        const tabMap = { 'lineup': 0, 'fielding': 1, 'bingo': 2, 'rules': 3, 'counter': 4, 'schedule': 5 };
         if(document.querySelectorAll('.tab-btn')[tabMap[tabId]]) {
             document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
         }
