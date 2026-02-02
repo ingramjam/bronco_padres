@@ -49,14 +49,13 @@
             justify-content: space-between; 
             border-left: 5px solid var(--primary); 
             box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
-            touch-action: pan-y; /* Allows scrolling */
+            touch-action: pan-y; 
         }
         .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-right: 8px; flex-shrink: 0; }
         .player-info { flex: 1; display: flex; align-items: center; overflow: hidden; }
         .player-name { font-weight: bold; color: var(--primary); font-size: 0.95rem; margin-right: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-num { font-size: 0.8rem; color: #888; flex-shrink: 0; }
         
-        /* Lineup Position Select */
         .pos-select-lineup {
             padding: 5px 2px;
             border: 1px solid #ccc;
@@ -85,7 +84,6 @@
         .fielding-table th { background: var(--primary); color: white; padding: 8px; font-size: 0.8rem; text-align: center; position: sticky; left: 0; z-index: 10; }
         .fielding-table th:not(:first-child) { background: #443a33; position: static; }
         .fielding-table td { border-bottom: 1px solid #eee; padding: 5px; text-align: center; }
-        /* Sticky First Column */
         .fielding-table td:first-child { 
             position: sticky; left: 0; background: white; z-index: 5; 
             font-weight: bold; font-size: 0.8rem; border-right: 2px solid #eee; 
@@ -132,10 +130,14 @@
         .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; color: var(--secondary); }
         .stat-card .value { font-size: 1.3rem; font-weight: bold; }
         .stat-card.alert { background: var(--warning); border-bottom-color: #b71c1c; }
+        
+        /* RULE CARDS */
         .rule-card { background: var(--card-bg); padding: 15px; border-radius: 12px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .rule-card.important { border-left-color: var(--warning); }
+        .rule-card.important { border-left-color: var(--warning); border-right: 1px solid var(--warning); }
         .rule-card h2 { margin-top: 0; font-size: 1rem; color: var(--primary); display: flex; justify-content: space-between; }
         .rule-card .category-tag { font-size: 0.65rem; background: #eee; padding: 2px 6px; border-radius: 4px; color: #666; font-weight: normal; }
+        .rule-card .source { font-size: 0.75rem; color: #999; font-style: italic; display: block; text-align: right; margin-top: 8px;}
+
         .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
         .filter-btn { background: #e0e0e0; border: none; padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.85rem; }
         .filter-btn.active { background: var(--primary); color: var(--secondary); }
@@ -168,7 +170,7 @@
 
     <div id="view-lineup" class="view-section active">
         <div style="background: #fff; padding: 8px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-size: 0.8rem; color: #666;">
-            Touch <strong>≡</strong> to drag.
+            Touch <strong>≡</strong> to drag. Auto-syncs with Fielding tab.
         </div>
         <ul class="lineup-list" id="lineupContainer"></ul>
         <button class="action-btn btn-share" onclick="shareLineup()">Share Lineup 📤</button>
@@ -202,10 +204,11 @@
             <div class="stat-card"><h3>Mercy Rule</h3><div class="value">10 run</div></div>
             <div class="stat-card"><h3>Min Play</h3><div class="value">Sit 1/All 1</div></div>
         </div>
-        <div class="search-container"><input type="text" id="searchInput" placeholder="Search rules..."></div>
+        <div class="search-container"><input type="text" id="searchInput" placeholder="Search rules (e.g. 'manager', 'pitch')..."></div>
         <div class="filters" id="filterContainer">
             <button class="filter-btn active" onclick="filterRules('All')">All</button>
             <button class="filter-btn" onclick="filterRules('Pitching')">Pitching</button>
+            <button class="filter-btn" onclick="filterRules('Manager')">Manager</button>
             <button class="filter-btn" onclick="filterRules('Game Time')">Time</button>
             <button class="filter-btn" onclick="filterRules('Roster & Batting')">Roster</button>
         </div>
@@ -225,6 +228,15 @@
                 <button class="ctrl-btn btn-plus" onclick="updatePitch(1)">+ Pitch</button>
             </div>
             <button class="action-btn btn-reset" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
+        </div>
+        <div style="margin-top: 15px; background: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #333;">
+            <strong>Bronco (11-12) Rest Requirements:</strong><br>
+            • 1-20: 0 Days<br>
+            • 21-35: 1 Day<br>
+            • 36-50: 2 Days<br>
+            • 51-65: 3 Days<br>
+            • 66+: 4 Days<br>
+            • <strong>MAX: 85</strong>
         </div>
     </div>
 
@@ -272,15 +284,25 @@
         { name: "Thomas Cabral", number: "" }
     ];
 
+    // UPDATED RULES FROM APPENDIX F
     const broncoRules = [
-        { category: "Pitching", title: "Daily Max Pitches", content: "Max 85 pitches/day. Finish batter if limit reached.", important: true },
-        { category: "Pitching", title: "Rest Days (11-12)", content: "1-20: 0 Days | 21-35: 1 Day | 36-50: 2 Days | 51-65: 3 Days | 66+: 4 Days.", important: true },
-        { category: "Pitching", title: "Pitcher Removal", content: "Once removed, cannot return to pitch. Remove immediately if hitting 3 batters.", important: true },
-        { category: "Game Time", title: "Duration", content: "7 innings. No new inning after 1 hr 50 mins. Hard stop 9:45 PM.", important: true },
-        { category: "Game Time", title: "Mercy Rule", content: "10 run lead after 5 complete innings (4 ½ if Home leads).", important: true },
-        { category: "Roster & Batting", title: "Batting", content: "Continuous batting order. Everyone bats.", important: false },
-        { category: "Roster & Batting", title: "Min Play", content: "No player sits 2 innings until all have sat 1. Must play 1 inning infield (Rec only).", important: true },
-        { category: "Base Running", title: "Slide/Avoid", content: "Must slide or avoid contact. Malicious contact = ejection & out.", important: true }
+        { category: "Roster", title: "Team Size", content: "Roster: 10-13 players. Age: 11-12.", important: false, source: "Appx F.1" },
+        { category: "Game Time", title: "Duration & Limits", content: "Regulation: 7 innings. Complete: 4 innings. No new inning after 1 hr 50 mins. Hard stop 9:45 PM. Ties permitted.", important: true, source: "Appx F.3.A-B, F.9.C" },
+        { category: "Roster", title: "Minimum Play", content: "No player sits 2 innings until all sit 1. No player sits 3 until all sit 2. Must play 1 inning infield (Rec only).", important: true, source: "Appx F.3.D" },
+        { category: "Game Time", title: "Mercy Rule", content: "10 run lead after 5 complete innings (4 ½ if Home leads).", important: true, source: "Appx F.4" },
+        { category: "Pitching", title: "Daily Max Pitches", content: "Max 85 pitches/day. May finish batter if limit reached during AB.", important: true, source: "Appx F.5" },
+        { category: "Pitching", title: "Rest Days (11-12)", content: "1-20: 0 Days | 21-35: 1 Day | 36-50: 2 Days | 51-65: 3 Days | 66+: 4 Days.", important: true, source: "Appx F.5 Table" },
+        { category: "Pitching", title: "Pitcher Removal", content: "Once removed from mound, pitcher cannot return to pitch in same game.", important: true, source: "Appx F.5.D" },
+        { category: "Pitching", title: "Mound Visits (Manager)", content: "2 visits in one inning (same pitcher) = mandatory removal. Exception: Injury.", important: true, source: "Appx F.5.E" },
+        { category: "Pitching", title: "Hit Batters", content: "Pitcher removed immediately if they hit 3 batters in one game.", important: true, source: "Appx F.5.F" },
+        { category: "Pitching", title: "Mandatory Pitching", content: "Every player must pitch to at least 5 batters during Spring season. Failure = Playoff Disqualification.", important: true, source: "Appx F.5.G" },
+        { category: "Batting", title: "Batting Order", content: "Continuous batting order. Everyone bats.", important: false, source: "Appx F.6" },
+        { category: "Base Running", title: "Courtesy Runners", content: "Allowed for Catcher w/ 2 outs. Must be last recorded out. Pinch runner allowed for injury only.", important: false, source: "Appx F.7" },
+        { category: "Conduct", title: "Unsportsmanlike", content: "Foul language or throwing equipment = Ejection + 1 game suspension. Must report to scorekeeper.", important: true, source: "Appx F.8" },
+        { category: "Base Running", title: "Slide or Avoid", content: "Must slide or avoid contact. Malicious contact = declared out.", important: true, source: "Appx F.10" },
+        { category: "Manager", title: "Umpire Interaction", content: "Judgment calls are final. Objecting to calls/unsportsmanlike conduct = Ejection.", important: true, source: "Appx F.11.B-C" },
+        { category: "Manager", title: "Appeals", content: "No appeals on Junior Umpire decisions. For rules appeals, Manager ONLY contacts Senior Umpire/Board.", important: true, source: "Appx F.11.D-E" },
+        { category: "Playoffs", title: "Tie Breaker", content: "Max 2 open innings. If still tied, coin flip determines winner.", important: false, source: "Appx F.12.B" }
     ];
 
     /* =========================================
@@ -478,6 +500,7 @@
             <div class="rule-card ${rule.important ? 'important' : ''}">
                 <h2>${rule.title} <span class="category-tag">${rule.category}</span></h2>
                 <p>${rule.content}</p>
+                <div class="source">Source: ${rule.source}</div>
             </div>
         `).join('');
     }
@@ -486,7 +509,7 @@
         const query = document.getElementById('searchInput').value.toLowerCase();
         const filtered = broncoRules.filter(rule => {
             const matchesCategory = category === 'All' || rule.category === category || (category === 'Time' && rule.category === 'Game Time');
-            const matchesSearch = rule.title.toLowerCase().includes(query) || rule.content.toLowerCase().includes(query);
+            const matchesSearch = rule.title.toLowerCase().includes(query) || rule.content.toLowerCase().includes(query) || rule.category.toLowerCase().includes(query);
             return matchesCategory && matchesSearch;
         });
         renderRules(filtered);
