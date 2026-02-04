@@ -8,149 +8,85 @@
     <style>
         :root {
             /* PADRES THEME */
-            --primary: #2F241D; /* Padres Brown */
-            --secondary: #FFC425; /* Padres Gold */
-            --bg: #f4f4f4;
-            --card-bg: #ffffff;
-            --text: #2F241D;
-            --warning: #d32f2f;
-            --gc-blue: #0086d1;
+            --primary: #2F241D; --secondary: #FFC425; --bg: #f4f4f4;
+            --card-bg: #ffffff; --text: #2F241D; --warning: #d32f2f; --gc-blue: #0086d1;
+            /* STATUS COLORS */
+            --ok: #2e7d32; --warn: #ef6c00; --error: #c62828;
+            --bench-bg: #e0e0e0; --infield-bg: #e8f5e9; --outfield-bg: #fff;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 80px; }
         .container { max-width: 800px; margin: 0 auto; padding: 10px; }
-        
-        /* HEADER IMAGE */
-        .header-img {
-            width: 100%;
-            height: auto;
-            display: block;
-            margin-bottom: 10px;
-            border-bottom: 4px solid var(--secondary);
-        }
+        .header-img { width: 100%; height: auto; display: block; margin-bottom: 10px; border-bottom: 4px solid var(--secondary); }
 
-        /* NAV TABS */
-        .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 15px; position: sticky; top: 5px; z-index: 100; gap: 3px; }
-        .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 2px; font-size: 0.7rem; font-weight: bold; color: #ccc; border-radius: 6px; cursor: pointer; transition: 0.2s; white-space: nowrap; text-transform: uppercase; text-align: center; }
-        .tab-btn.active { background: var(--secondary); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-
-        .view-section { display: none; }
-        .view-section.active { display: block; animation: fadeIn 0.3s; }
+        /* TABS */
+        .nav-tabs { display: flex; background: var(--primary); padding: 5px; border-radius: 12px; margin-bottom: 15px; position: sticky; top: 5px; z-index: 100; gap: 3px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 2px; font-size: 0.7rem; font-weight: bold; color: #ccc; border-radius: 6px; cursor: pointer; text-transform: uppercase; }
+        .tab-btn.active { background: var(--secondary); color: var(--primary); }
+        .view-section { display: none; } .view-section.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LINEUP CARD */
+        /* LINEUP */
         .lineup-list { list-style: none; padding: 0; margin: 0; }
-        .lineup-item { 
-            background: white; 
-            padding: 8px 10px; 
-            margin-bottom: 6px; 
-            border-radius: 8px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            border-left: 5px solid var(--primary); 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
-            touch-action: pan-y; 
-        }
+        .lineup-item { background: white; padding: 8px 10px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center; border-left: 5px solid var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); touch-action: pan-y; }
         .player-order { font-weight: bold; color: var(--secondary); background: var(--primary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-right: 8px; flex-shrink: 0; }
         .player-info { flex: 1; display: flex; align-items: center; overflow: hidden; }
         .player-name { font-weight: bold; color: var(--primary); font-size: 0.95rem; margin-right: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-num { font-size: 0.8rem; color: #888; flex-shrink: 0; }
-        
-        .pos-select-lineup {
-            padding: 5px 2px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #f9f9f9;
-            font-weight: bold;
-            color: #333;
-            font-size: 0.85rem;
-            width: 50px;
-            text-align: center;
-            margin-right: 10px;
-        }
+        .pos-select-lineup { padding: 5px 2px; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; font-weight: bold; width: 50px; text-align: center; margin-right: 10px; }
+        .drag-handle { color: #ccc; font-size: 1.4rem; padding: 5px 10px; margin-right: -5px; cursor: grab; }
 
-        .drag-handle { 
-            color: #ccc; 
-            font-size: 1.4rem; 
-            padding: 5px 10px; 
-            margin-right: -5px;
-            cursor: grab; 
-            touch-action: none; 
-        }
-
-        /* FIELDING MATRIX */
-        .fielding-container { overflow-x: auto; -webkit-overflow-scrolling: touch; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 5px; }
-        .fielding-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        /* FIELDING MATRIX (SMART) */
+        .fielding-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 5px; }
+        .fielding-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .fielding-table th { background: var(--primary); color: white; padding: 8px; font-size: 0.8rem; text-align: center; position: sticky; left: 0; z-index: 10; }
         .fielding-table th:not(:first-child) { background: #443a33; position: static; }
-        .fielding-table td { border-bottom: 1px solid #eee; padding: 5px; text-align: center; }
+        .fielding-table td { border-bottom: 1px solid #eee; padding: 4px; text-align: center; }
+        
+        /* Sticky Name Column & Status */
         .fielding-table td:first-child { 
             position: sticky; left: 0; background: white; z-index: 5; 
-            font-weight: bold; font-size: 0.8rem; border-right: 2px solid #eee; 
-            text-align: left; padding-left: 10px; min-width: 90px; 
+            font-weight: bold; font-size: 0.75rem; border-right: 2px solid #eee; 
+            text-align: left; padding-left: 5px; min-width: 100px; 
             color: var(--primary);
         }
-        .pos-select-small { width: 100%; padding: 6px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; background: #fff; text-align: center; font-weight: bold; color: #333; }
         
-        /* BINGO STYLES */
-        .bingo-wrapper { display: flex; flex-direction: column; align-items: center; }
-        .bingo-card { 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; max-width: 400px; 
-            background-color: var(--primary); border: 3px solid var(--secondary); padding: 3px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 10px; border-radius: 8px; box-sizing: border-box;
-        }
-        .bingo-square { 
-            background-color: #fff; padding: 2px; text-align: center; font-size: 0.6rem; cursor: pointer; user-select: none; 
-            display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; 
-            word-break: break-word; line-height: 1.1; font-weight: 600; color: var(--primary); border-radius: 2px;
-        }
-        .bingo-square.checked { background-color: var(--secondary); color: var(--primary); opacity: 1; }
-        .center-square { 
-            background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); 
-            background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; 
-        }
+        .pos-select-small { width: 100%; padding: 8px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; text-align: center; font-weight: bold; color: #333; -webkit-appearance: none; }
+        
+        /* Position Color Coding */
+        .pos-bn { background-color: var(--bench-bg); color: #666; border-color: #999; }
+        .pos-infield { background-color: var(--infield-bg); color: #004d40; border-color: #a5d6a7; }
+        .pos-outfield { background-color: #fff; color: #333; }
 
-        /* BUTTONS */
+        /* Status Indicators */
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+        .status-text { display: block; font-size: 0.65rem; font-weight: normal; margin-top: 2px; }
+        .stat-ok { color: var(--ok); }
+        .stat-warn { color: var(--warn); }
+        .stat-err { color: var(--error); }
+        .row-err td:first-child { background-color: #ffebee; border-left: 3px solid var(--error); }
+        .row-warn td:first-child { background-color: #fff3e0; border-left: 3px solid var(--warn); }
+
+        /* GENERIC UI */
         .action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; }
         .btn-share { background: var(--secondary); color: var(--primary); }
         .btn-reset { background: white; border: 1px solid #ccc; color: #666; font-size: 0.9rem; }
-        .venmo-link { margin-top: 15px; text-align: center; font-weight: bold; }
-        .venmo-link a { color: #007bff; text-decoration: none; }
-
-        /* SCHEDULE STYLES */
-        .schedule-list { list-style: none; padding: 0; }
-        .schedule-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--secondary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .sched-date { font-weight: bold; color: var(--primary); font-size: 0.9rem; margin-bottom: 5px; }
-        .sched-title { font-size: 1.1rem; font-weight: bold; }
-        .sched-loc { color: #666; font-size: 0.9rem; }
-
-        /* SHARED VIEWS */
-        .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; }
-        .stat-card { background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--secondary); }
-        .stat-card h3 { margin: 0 0 5px 0; font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; color: var(--secondary); }
-        .stat-card .value { font-size: 1.3rem; font-weight: bold; }
-        .stat-card.alert { background: var(--warning); border-bottom-color: #b71c1c; }
-        
-        /* RULE CARDS */
         .rule-card { background: var(--card-bg); padding: 15px; border-radius: 12px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .rule-card.important { border-left-color: var(--warning); border-right: 1px solid var(--warning); }
-        .rule-card h2 { margin-top: 0; font-size: 1rem; color: var(--primary); display: flex; justify-content: space-between; }
-        .rule-card .category-tag { font-size: 0.65rem; background: #eee; padding: 2px 6px; border-radius: 4px; color: #666; font-weight: normal; }
-        .rule-card .source { font-size: 0.75rem; color: #999; font-style: italic; display: block; text-align: right; margin-top: 8px;}
-
+        .rule-card h2 { margin: 0; font-size: 1rem; color: var(--primary); display: flex; justify-content: space-between; }
         .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
         .filter-btn { background: #e0e0e0; border: none; padding: 8px 14px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.85rem; }
         .filter-btn.active { background: var(--primary); color: var(--secondary); }
-        .search-container input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; margin-bottom: 15px; }
-
-        /* PITCH COUNTER */
         .counter-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--primary); }
         .pitch-display { font-size: 5rem; font-weight: bold; color: var(--primary); line-height: 1; margin: 10px 0; }
-        .rest-status { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .ctrl-btn { border: none; padding: 15px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; }
         .btn-minus { background: #e0e0e0; color: #333; }
         .btn-plus { background: var(--primary); color: var(--secondary); font-weight: bold; }
+        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; background: var(--primary); border: 3px solid var(--secondary); padding: 3px; border-radius: 8px; }
+        .bingo-square { background: #fff; padding: 2px; text-align: center; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; border-radius: 2px; cursor: pointer; }
+        .bingo-square.checked { background: var(--secondary); color: var(--primary); }
+        .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; }
+        .schedule-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--secondary); }
     </style>
 </head>
 <body>
@@ -158,7 +94,6 @@
 <img src="https://www.escondidoyouthbaseball.com/portals/28785/teamhome/teamhome639045248653715983.png" alt="Padres Header" class="header-img">
 
 <div class="container">
-    
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('lineup')">Lineup</button>
         <button class="tab-btn" onclick="switchTab('fielding')">Fielding</button>
@@ -178,33 +113,29 @@
     </div>
 
     <div id="view-fielding" class="view-section">
-        <div style="margin-bottom: 10px; font-size: 0.9rem; color: #555; text-align: center;">
-            Order matches Lineup tab. Auto-saves.
+        <div class="rule-card important" style="font-size: 0.85rem; padding: 10px;">
+            <strong>Rules Active:</strong>
+            <ul style="margin: 5px 0 0 15px; padding: 0;">
+                <li>No player sits 2 until all sit 1.</li>
+                <li>Everyone must play 1 inning Infield.</li>
+            </ul>
         </div>
         <div class="fielding-container">
-            <table class="fielding-table" id="fieldingTable">
-                </table>
+            <table class="fielding-table" id="fieldingTable"></table>
         </div>
         <button class="action-btn btn-reset" onclick="resetFielding()">Clear All Positions</button>
     </div>
 
     <div id="view-bingo" class="view-section">
-        <div class="bingo-wrapper">
+        <div style="display:flex; flex-direction:column; align-items:center;">
             <h2 style="color: var(--primary); margin:0 0 10px 0;">Game Time Bingo!</h2>
             <div class="bingo-card" id="bingoCard"></div>
             <button class="action-btn btn-share" id="bingoResetBtn" style="margin-top: 20px;">New Card</button>
-            <div class="venmo-link"><a href="https://venmo.com/jwyld" target="_blank">Donate</a></div>
         </div>
     </div>
 
     <div id="view-rules" class="view-section">
-        <div class="dashboard">
-            <div class="stat-card alert"><h3>Max Pitches</h3><div class="value">85</div></div>
-            <div class="stat-card"><h3>Max Time</h3><div class="value">1:50</div></div>
-            <div class="stat-card"><h3>Mercy Rule</h3><div class="value">10 run</div></div>
-            <div class="stat-card"><h3>Min Play</h3><div class="value">Sit 1/All 1</div></div>
-        </div>
-        <div class="search-container"><input type="text" id="searchInput" placeholder="Search rules (e.g. 'manager', 'pitch')..."></div>
+        <div class="search-container"><input type="text" id="searchInput" placeholder="Search rules..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;"></div>
         <div class="filters" id="filterContainer">
             <button class="filter-btn active" onclick="filterRules('All')">All</button>
             <button class="filter-btn" onclick="filterRules('Pitching')">Pitching</button>
@@ -219,7 +150,7 @@
         <div class="counter-card">
             <div style="color: #666; font-size: 0.9rem; text-transform: uppercase;">Current Count</div>
             <div class="pitch-display" id="countDisplay">0</div>
-            <div class="rest-status">
+            <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
                 <span style="font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block;" id="restDisplay">0 Days Rest</span>
                 <span style="font-size: 0.9rem; color: #666;" id="thresholdDisplay">20 pitches until 1 Day Rest</span>
             </div>
@@ -229,62 +160,39 @@
             </div>
             <button class="action-btn btn-reset" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
         </div>
-        <div style="margin-top: 15px; background: white; padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #333;">
-            <strong>Bronco (11-12) Rest Requirements:</strong><br>
-            • 1-20: 0 Days<br>
-            • 21-35: 1 Day<br>
-            • 36-50: 2 Days<br>
-            • 51-65: 3 Days<br>
-            • 66+: 4 Days<br>
-            • <strong>MAX: 85</strong>
-        </div>
     </div>
 
     <div id="view-schedule" class="view-section">
         <div class="rule-card" style="text-align: center; border-left: none;">
-            <h2 style="justify-content: center; margin-bottom: 10px;">GameChanger</h2>
             <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">Open Team Schedule</a>
         </div>
-        
         <h3 style="margin-left: 10px; color: var(--primary);">Weekly Schedule</h3>
-        <ul class="schedule-list">
+        <ul style="list-style:none; padding:0;">
             <li class="schedule-item">
-                <div class="sched-date">EVERY TUESDAY</div>
-                <div class="sched-title">Team Practice</div>
-                <div class="sched-loc">5:30 PM - 7:30 PM</div>
+                <div style="font-weight:bold; color:var(--primary);">EVERY TUESDAY</div>
+                <div style="font-size:1.1rem; font-weight:bold;">Team Practice</div>
+                <div style="color:#666;">5:30 PM - 7:30 PM</div>
             </li>
         </ul>
-
         <h3 style="margin-left: 10px; color: var(--primary);">Upcoming Games</h3>
-        <ul class="schedule-list">
+        <ul style="list-style:none; padding:0;">
              <li class="schedule-item" style="border-left-color: #ccc;">
-                <div class="sched-title" style="color:#666; text-align: center;">TBD</div>
-                <div class="sched-loc" style="text-align: center;">No games scheduled yet.</div>
+                <div style="color:#666; text-align: center; font-size:1.1rem; font-weight:bold;">TBD</div>
+                <div style="text-align: center; color:#666;">No games scheduled yet.</div>
             </li>
         </ul>
     </div>
 </div>
 
 <script>
-    /* =========================================
-       1. DATA DEFINITIONS
-       ========================================= */
+    // --- DATA ---
     const teamRoster = [
-        { name: "Jace Ingram", number: "#3" },
-        { name: "Jaxson Fonseca", number: "#29" },
-        { name: "JD Mayberry", number: "#51" },
-        { name: "Adam Enriquez", number: "" },
-        { name: "Blake Taylor", number: "" },
-        { name: "Brooks Schott", number: "" },
-        { name: "Declan Riley", number: "" },
-        { name: "Donovan Cox", number: "" },
-        { name: "Giovani Preciado", number: "" },
-        { name: "Landon Hodgson", number: "" },
-        { name: "Myles Gonzalez", number: "" },
-        { name: "Thomas Cabral", number: "" }
+        { name: "Jace Ingram", number: "#3" }, { name: "Jaxson Fonseca", number: "#29" }, { name: "JD Mayberry", number: "#51" },
+        { name: "Adam Enriquez", number: "" }, { name: "Blake Taylor", number: "" }, { name: "Brooks Schott", number: "" },
+        { name: "Declan Riley", number: "" }, { name: "Donovan Cox", number: "" }, { name: "Giovani Preciado", number: "" },
+        { name: "Landon Hodgson", number: "" }, { name: "Myles Gonzalez", number: "" }, { name: "Thomas Cabral", number: "" }
     ];
 
-    // UPDATED RULES FROM APPENDIX F
     const broncoRules = [
         { category: "Roster", title: "Team Size", content: "Roster: 10-13 players. Age: 11-12.", important: false, source: "Appx F.1" },
         { category: "Game Time", title: "Duration & Limits", content: "Regulation: 7 innings. Complete: 4 innings. No new inning after 1 hr 50 mins. Hard stop 9:45 PM. Ties permitted.", important: true, source: "Appx F.3.A-B, F.9.C" },
@@ -304,12 +212,10 @@
         { category: "Playoffs", title: "Tie Breaker", content: "Max 2 open innings. If still tied, coin flip determines winner.", important: false, source: "Appx F.12.B" }
     ];
 
-    /* =========================================
-       2. APP LOGIC
-       ========================================= */
     let currentRosterOrder = [];
-    let fieldingData = {}; // Stores { playerName: [pos1, pos2, ... pos6] }
+    let fieldingData = {}; 
     const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
+    const INFIELD_POS = ["P", "C", "1B", "2B", "3B", "SS"];
 
     window.onload = function() {
         initLineup();
@@ -318,41 +224,28 @@
         initBingo();
         
         new Sortable(document.getElementById('lineupContainer'), {
-            handle: '.drag-handle',
-            animation: 150,
+            handle: '.drag-handle', animation: 150,
             onEnd: function (evt) {
                 const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
                 currentRosterOrder.splice(evt.newIndex, 0, movedItem);
-                saveLineup();
-                renderLineup();
-                // We do NOT immediately renderFielding here to save performance, 
-                // but we will update it when the tab is clicked.
+                saveLineup(); renderLineup();
             }
         });
     };
 
-    // --- LINEUP LOGIC ---
+    // --- LINEUP ---
     function initLineup() {
-        const saved = localStorage.getItem('broncoLineup_v5');
-        if (saved) {
-            currentRosterOrder = JSON.parse(saved);
-        } else {
-            // Include 'pos' for lineup card specific position
-            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); 
-        }
+        const saved = localStorage.getItem('broncoLineup_v6');
+        if (saved) currentRosterOrder = JSON.parse(saved);
+        else currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); 
         renderLineup();
     }
-
     function renderLineup() {
-        const container = document.getElementById('lineupContainer');
-        container.innerHTML = currentRosterOrder.map((player, index) => `
+        document.getElementById('lineupContainer').innerHTML = currentRosterOrder.map((player, index) => `
             <li class="lineup-item">
                 <div style="display:flex; align-items:center; flex:1; min-width:0;">
                     <div class="player-order">${index + 1}</div>
-                    <div class="player-info">
-                        <span class="player-name">${player.name}</span>
-                        <span class="player-num">${player.number}</span>
-                    </div>
+                    <div class="player-info"><span class="player-name">${player.name}</span><span class="player-num">${player.number}</span></div>
                 </div>
                 <div style="display:flex; align-items:center;">
                     <select class="pos-select-lineup" onchange="updateLineupPos(${index}, this.value)">
@@ -364,63 +257,64 @@
             </li>
         `).join('');
     }
-
-    function updateLineupPos(index, value) {
-        currentRosterOrder[index].pos = value;
-        saveLineup();
-    }
-
-    function saveLineup() {
-        localStorage.setItem('broncoLineup_v5', JSON.stringify(currentRosterOrder));
-    }
-
-    function resetLineup() {
-        if(confirm("Reset batting order?")) {
-            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
-            saveLineup();
-            renderLineup();
-        }
-    }
-
+    function updateLineupPos(index, value) { currentRosterOrder[index].pos = value; saveLineup(); }
+    function saveLineup() { localStorage.setItem('broncoLineup_v6', JSON.stringify(currentRosterOrder)); }
+    function resetLineup() { if(confirm("Reset batting order?")) { currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); saveLineup(); renderLineup(); }}
     function shareLineup() {
         let text = "⚾ Padres Lineup:\n";
-        currentRosterOrder.forEach((p, i) => {
-            let pos = p.pos ? `(${p.pos})` : "";
-            text += `${i+1}. ${p.name} ${p.number} ${pos}\n`;
-        });
-        
-        if (navigator.share) {
-            navigator.share({ title: 'Bronco Padres Lineup', text: text }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(text);
-            alert("Lineup copied to clipboard!");
-        }
+        currentRosterOrder.forEach((p, i) => { text += `${i+1}. ${p.name} ${p.number} ${p.pos ? `(${p.pos})` : ""}\n`; });
+        if (navigator.share) navigator.share({ title: 'Bronco Padres Lineup', text: text }).catch(console.error);
+        else { navigator.clipboard.writeText(text); alert("Lineup copied!"); }
     }
 
-    // --- FIELDING MATRIX LOGIC ---
+    // --- SMART FIELDING MATRIX ---
     function initFielding() {
-        const savedFielding = localStorage.getItem('broncoFielding_v1');
-        if (savedFielding) {
-            fieldingData = JSON.parse(savedFielding);
-        } else {
-            teamRoster.forEach(p => {
-                fieldingData[p.name] = ["", "", "", "", "", ""];
-            });
-        }
+        const savedFielding = localStorage.getItem('broncoFielding_v6');
+        if (savedFielding) fieldingData = JSON.parse(savedFielding);
+        else teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", ""]; });
         renderFielding();
     }
-
     function renderFielding() {
         const table = document.getElementById('fieldingTable');
+        
+        // 1. Calculate Sit Counts
+        let playerSits = {};
+        let minSits = 6; // Start high
+        currentRosterOrder.forEach(p => {
+            let data = fieldingData[p.name] || ["","","","","",""];
+            let sits = data.filter(pos => pos === "BN").length;
+            playerSits[p.name] = sits;
+            if(sits < minSits) minSits = sits;
+        });
+
         let html = `<thead><tr><th>Player</th>`;
-        for(let i=1; i<=6; i++) html += `<th>Inn ${i}</th>`;
+        for(let i=1; i<=6; i++) html += `<th>${i}</th>`;
         html += `</tr></thead><tbody>`;
 
-        // Iterate through CURRENT batting order so table matches lineup
         currentRosterOrder.forEach(player => {
             if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", ""];
             
-            html += `<tr><td>${player.name}</td>`;
+            // VALIDATION LOGIC
+            let sits = playerSits[player.name];
+            let infieldCount = fieldingData[player.name].filter(pos => INFIELD_POS.includes(pos)).length;
+            
+            let isSitViolator = (sits > minSits + 1); // Broke "No sit 2 until all sit 1"
+            let needsInfield = (infieldCount === 0);
+            
+            let rowClass = "";
+            let statusHtml = "";
+            
+            if (isSitViolator) {
+                rowClass = "row-err";
+                statusHtml = `<span class="status-text stat-err">Sit violation</span>`;
+            } else if (needsInfield) {
+                rowClass = "row-warn";
+                statusHtml = `<span class="status-text stat-warn">Needs Infield</span>`;
+            } else {
+                statusHtml = `<span class="status-text stat-ok">Good</span>`;
+            }
+
+            html += `<tr class="${rowClass}"><td>${player.name}${statusHtml}</td>`;
             for(let i=0; i<6; i++) {
                 html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
             }
@@ -429,123 +323,71 @@
         html += `</tbody>`;
         table.innerHTML = html;
     }
-
     function createPosSelect(playerName, inningIndex, currentVal) {
+        let bgClass = "pos-outfield";
+        if (currentVal === "BN") bgClass = "pos-bn";
+        else if (INFIELD_POS.includes(currentVal)) bgClass = "pos-infield";
+        
         let opts = POSITIONS.map(p => `<option value="${p}" ${p===currentVal?'selected':''}>${p}</option>`).join('');
-        return `<select class="pos-select-small" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
+        return `<select class="pos-select-small ${bgClass}" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
     }
-
     function updateFielding(playerName, inningIndex, value) {
         if (!fieldingData[playerName]) fieldingData[playerName] = ["", "", "", "", "", ""];
         fieldingData[playerName][inningIndex] = value;
-        localStorage.setItem('broncoFielding_v1', JSON.stringify(fieldingData));
+        localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
+        renderFielding(); // Re-render to update validation immediately
     }
-
     function resetFielding() {
         if(confirm("Clear all positions?")) {
-            teamRoster.forEach(p => {
-                fieldingData[p.name] = ["", "", "", "", "", ""];
-            });
-            localStorage.setItem('broncoFielding_v1', JSON.stringify(fieldingData));
+            teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", ""]; });
+            localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
             renderFielding();
         }
     }
 
-    // --- BINGO, RULES, PITCH COUNTER & TABS ---
-    const baseballTerms = [
-        "Home Run", "My Kid Strikes Out", "Walk-In Run", "Out", "Foul Ball Out",
-        "Double", "Triple", "Grand Slam", "Walk", "Pitcher Cries",
-        "Catcher Cries", "Gopher Hole", "My Kid Scored", "Pick Off", "Steal",
-        "Error", "RBI", "Dad Kicked Out", "Terrible Call", "Tie Shoes",
-        "Hit By Pitch", "No Glove On", "Oven Mitt", "No Game Balls", "Wild Pitch"
-    ];
+    // --- UTILS ---
+    const baseballTerms = [ "Home Run", "My Kid Strikes Out", "Walk-In Run", "Out", "Foul Ball Out", "Double", "Triple", "Grand Slam", "Walk", "Pitcher Cries", "Catcher Cries", "Gopher Hole", "My Kid Scored", "Pick Off", "Steal", "Error", "RBI", "Dad Kicked Out", "Terrible Call", "Tie Shoes", "Hit By Pitch", "No Glove On", "Oven Mitt", "No Game Balls", "Wild Pitch" ];
     function initBingo() {
         const savedTerms = localStorage.getItem('bingoTerms');
         if (savedTerms) createBingoCard(JSON.parse(savedTerms)); else newBingoCard();
         document.getElementById('bingoResetBtn').addEventListener('click', newBingoCard);
     }
     function createBingoCard(terms) {
-        const bingoCard = document.getElementById('bingoCard');
-        bingoCard.innerHTML = '';
-        let squareIndex = 0;
-        for (let row = 0; row < 5; row++) {
-            for (let col = 0; col < 5; col++) {
-                const square = document.createElement('div');
-                square.classList.add('bingo-square');
-                if (row === 2 && col === 2) {
-                    square.classList.add('center-square');
-                } else {
-                    square.textContent = terms[squareIndex];
-                    squareIndex++;
-                    square.addEventListener('click', () => square.classList.toggle('checked'));
-                }
-                bingoCard.appendChild(square);
-            }
+        const bingoCard = document.getElementById('bingoCard'); bingoCard.innerHTML = ''; let idx = 0;
+        for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+            const sq = document.createElement('div'); sq.classList.add('bingo-square');
+            if (r === 2 && c === 2) sq.classList.add('center-square');
+            else { sq.textContent = terms[idx++]; sq.onclick = () => sq.classList.toggle('checked'); }
+            bingoCard.appendChild(sq);
         }
     }
     function newBingoCard() {
-        let array = [...baseballTerms];
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        const currentTerms = array.slice(0, 24);
-        localStorage.setItem('bingoTerms', JSON.stringify(currentTerms));
-        createBingoCard(currentTerms);
+        let arr = [...baseballTerms].sort(() => 0.5 - Math.random());
+        localStorage.setItem('bingoTerms', JSON.stringify(arr.slice(0, 24))); createBingoCard(arr.slice(0, 24));
     }
-
-    function renderRules(rules) {
-        document.getElementById('rulesContainer').innerHTML = rules.map(rule => `
-            <div class="rule-card ${rule.important ? 'important' : ''}">
-                <h2>${rule.title} <span class="category-tag">${rule.category}</span></h2>
-                <p>${rule.content}</p>
-                <div class="source">Source: ${rule.source}</div>
-            </div>
-        `).join('');
-    }
-    function filterRules(category) {
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === category));
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = broncoRules.filter(rule => {
-            const matchesCategory = category === 'All' || rule.category === category || (category === 'Time' && rule.category === 'Game Time');
-            const matchesSearch = rule.title.toLowerCase().includes(query) || rule.content.toLowerCase().includes(query) || rule.category.toLowerCase().includes(query);
-            return matchesCategory && matchesSearch;
-        });
-        renderRules(filtered);
+    function renderRules(rules) { document.getElementById('rulesContainer').innerHTML = rules.map(r => `<div class="rule-card ${r.important ? 'important' : ''}"><h2>${r.title} <span class="category-tag">${r.category}</span></h2><p>${r.content}</p><div class="source">Source: ${r.source}</div></div>`).join(''); }
+    function filterRules(cat) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === cat));
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        renderRules(broncoRules.filter(r => (cat === 'All' || r.category === cat) && (r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q))));
     }
     document.getElementById('searchInput').addEventListener('input', () => filterRules('All'));
-
-    let pitchCount = 0;
-    const pitchThresholds = [ { limit: 20, rest: "0 Days", next: "1 Day" }, { limit: 35, rest: "1 Day", next: "2 Days" }, { limit: 50, rest: "2 Days", next: "3 Days" }, { limit: 65, rest: "3 Days", next: "4 Days" }, { limit: 85, rest: "4 Days", next: "MAX" } ];
-    function updatePitch(change) {
-        if (change === -999) pitchCount = 0; else pitchCount += change;
-        if (pitchCount < 0) pitchCount = 0;
+    let pitchCount = 0; const thresholds = [ {l:20,r:"0 Days",n:"1 Day"}, {l:35,r:"1 Day",n:"2 Days"}, {l:50,r:"2 Days",n:"3 Days"}, {l:65,r:"3 Days",n:"4 Days"}, {l:85,r:"4 Days",n:"MAX"} ];
+    function updatePitch(c) {
+        if (c === -999) pitchCount = 0; else pitchCount = Math.max(0, pitchCount + c);
         document.getElementById('countDisplay').innerText = pitchCount;
-        let status = pitchThresholds[0];
-        let next = pitchThresholds[0].limit;
-        if (pitchCount > 65) { status = pitchThresholds[4]; next = 85; }
-        else if (pitchCount > 50) { status = pitchThresholds[3]; next = 65; }
-        else if (pitchCount > 35) { status = pitchThresholds[2]; next = 50; }
-        else if (pitchCount > 20) { status = pitchThresholds[1]; next = 35; }
-        if (pitchCount >= 85) {
-            document.getElementById('restDisplay').innerText = "MAX LIMIT";
-            document.getElementById('thresholdDisplay').innerText = "Finish batter only";
-        } else {
-            document.getElementById('restDisplay').innerText = status.rest + " Rest";
-            document.getElementById('thresholdDisplay').innerText = `${next - pitchCount} until ${status.next} Rest`;
-        }
+        let s = thresholds[0], n = thresholds[0].l;
+        if (pitchCount > 65) { s=thresholds[4]; n=85; } else if (pitchCount > 50) { s=thresholds[3]; n=65; } else if (pitchCount > 35) { s=thresholds[2]; n=50; } else if (pitchCount > 20) { s=thresholds[1]; n=35; }
+        document.getElementById('restDisplay').innerText = pitchCount>=85 ? "MAX LIMIT" : s.r + " Rest";
+        document.getElementById('thresholdDisplay').innerText = pitchCount>=85 ? "Finish batter only" : `${n - pitchCount} until ${s.n} Rest`;
     }
-
-    function switchTab(tabId) {
+    function switchTab(id) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('view-' + tabId).classList.add('active');
-        const tabMap = { 'lineup': 0, 'fielding': 1, 'bingo': 2, 'rules': 3, 'counter': 4, 'schedule': 5 };
-        if(document.querySelectorAll('.tab-btn')[tabMap[tabId]]) {
-            document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
-        }
-        // Force re-render of fielding table to ensure it matches current lineup order
-        if(tabId === 'fielding') renderFielding();
+        document.getElementById('view-' + id).classList.add('active');
+        const map = { 'lineup': 0, 'fielding': 1, 'bingo': 2, 'rules': 3, 'counter': 4, 'schedule': 5 };
+        if(document.querySelectorAll('.tab-btn')[map[id]]) document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
+        if(id === 'fielding') renderFielding();
     }
 </script>
 </body>
