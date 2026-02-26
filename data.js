@@ -32,17 +32,18 @@ const pitchThresholds = [
 ];
 
 // 4. ROSTER
+const SONG_FOLDER = "https://drive.google.com/drive/folders/1imDXA9Q52GXdS6x3aW17O9sH-Fzc7DWb?usp=drive_link";
 const teamRoster = [
-    { name: "Jace Ingram", number: "#3" },
-    { name: "Jaxson Fonseca", number: "#29" },
-    { name: "JD Mayberry", number: "#51" },
-    { name: "Adam Enriquez", number: "" },
-    { name: "Blake Taylor", number: "" },
-    { name: "Brooks Schott", number: "" },
-    { name: "Declan Riley", number: "" },
-    { name: "Donovan Cox", number: "" },
-    { name: "Giovani Preciado", number: "" },
-    { name: "Landon Hodgson", number: "" },
-    { name: "Myles Gonzalez", number: "" },
-    { name: "Thomas Cabral", number: "" }
+    { name: "Jace Ingram",      number: "#3",  songUrl: SONG_FOLDER },
+    { name: "Jaxson Fonseca",   number: "#29", songUrl: SONG_FOLDER },
+    { name: "JD Mayberry",      number: "#51", songUrl: SONG_FOLDER },
+    { name: "Adam Enriquez",    number: "",    songUrl: SONG_FOLDER },
+    { name: "Blake Taylor",     number: "",    songUrl: SONG_FOLDER },
+    { name: "Brooks Schott",    number: "",    songUrl: SONG_FOLDER },
+    { name: "Declan Riley",     number: "",    songUrl: SONG_FOLDER },
+    { name: "Donovan Cox",      number: "",    songUrl: SONG_FOLDER },
+    { name: "Giovani Preciado", number: "",    songUrl: SONG_FOLDER },
+    { name: "Landon Hodgson",   number: "",    songUrl: SONG_FOLDER },
+    { name: "Myles Gonzalez",   number: "",    songUrl: SONG_FOLDER },
+    { name: "Thomas Cabral",    number: "",    songUrl: SONG_FOLDER }
 ];
