@@ -254,8 +254,8 @@
                     <div class="player-info"><span class="player-name">${player.name}</span><span class="player-num">${player.number}</span></div>
                 </div>
                 <div style="display:flex; align-items:center;">
-                    ${songUrl ? `<button class="song-btn" onclick="toggleSong(${safeName}, ${safeSongUrl})" title="${isPlaying ? 'Stop' : 'Play'} walk-up song">${isPlaying ? '⏹' : '▶️'}</button>` : ''}
-                    <button class="out-toggle${isOut ? ' is-out' : ''}" onclick="toggleOut(${safeName})">${isOut ? '✕ OUT' : 'OUT'}</button>
+                    ${songUrl ? `<button class="song-btn" onclick='toggleSong(${safeName}, ${safeSongUrl})' title="${isPlaying ? 'Stop' : 'Play'} walk-up song">${isPlaying ? '⏹' : '▶️'}</button>` : ''}
+                    <button class="out-toggle${isOut ? ' is-out' : ''}" onclick='toggleOut(${safeName})'>${isOut ? '✕ OUT' : 'OUT'}</button>
                     <select class="pos-select-lineup" onchange="updateLineupPos(${index}, this.value)">
                         <option value="" ${player.pos===""?'selected':''}>-</option>
                         ${POSITIONS.slice(1).map(p => `<option value="${p}" ${player.pos===p?'selected':''}>${p}</option>`).join('')}
