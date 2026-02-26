@@ -87,6 +87,15 @@
         .bingo-square.checked { background: var(--secondary); color: var(--primary); }
         .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; }
         .schedule-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--secondary); }
+
+        /* OUT player */
+        .out-toggle { padding: 3px 8px; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-right: 5px; flex-shrink: 0; }
+        .out-toggle.is-out { background: #d32f2f; color: white; border-color: #d32f2f; }
+        .song-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 4px; flex-shrink: 0; text-decoration: none; line-height: 1; }
+        .player-is-out .player-name { text-decoration: line-through; color: #999; }
+        .player-is-out .player-num { color: #bbb; }
+        .row-out td:not(:first-child) { opacity: 0.35; pointer-events: none; }
+        .row-out td:first-child { background-color: #f5f5f5 !important; color: #999; }
     </style>
 </head>
 <body>
@@ -186,11 +195,20 @@
 
 <script>
     // --- DATA ---
+    const SONG_FOLDER = "https://drive.google.com/drive/folders/1imDXA9Q52GXdS6x3aW17O9sH-Fzc7DWb?usp=drive_link";
     const teamRoster = [
-        { name: "Jace Ingram", number: "#3" }, { name: "Jaxson Fonseca", number: "#29" }, { name: "JD Mayberry", number: "#51" },
-        { name: "Adam Enriquez", number: "" }, { name: "Blake Taylor", number: "" }, { name: "Brooks Schott", number: "" },
-        { name: "Declan Riley", number: "" }, { name: "Donovan Cox", number: "" }, { name: "Giovani Preciado", number: "" },
-        { name: "Landon Hodgson", number: "" }, { name: "Myles Gonzalez", number: "" }, { name: "Thomas Cabral", number: "" }
+        { name: "Jace Ingram",      number: "#3",  songUrl: SONG_FOLDER },
+        { name: "Jaxson Fonseca",   number: "#29", songUrl: SONG_FOLDER },
+        { name: "JD Mayberry",      number: "#51", songUrl: SONG_FOLDER },
+        { name: "Adam Enriquez",    number: "",    songUrl: SONG_FOLDER },
+        { name: "Blake Taylor",     number: "",    songUrl: SONG_FOLDER },
+        { name: "Brooks Schott",    number: "",    songUrl: SONG_FOLDER },
+        { name: "Declan Riley",     number: "",    songUrl: SONG_FOLDER },
+        { name: "Donovan Cox",      number: "",    songUrl: SONG_FOLDER },
+        { name: "Giovani Preciado", number: "",    songUrl: SONG_FOLDER },
+        { name: "Landon Hodgson",   number: "",    songUrl: SONG_FOLDER },
+        { name: "Myles Gonzalez",   number: "",    songUrl: SONG_FOLDER },
+        { name: "Thomas Cabral",    number: "",    songUrl: SONG_FOLDER }
     ];
 
     const broncoRules = [
@@ -213,11 +231,13 @@
     ];
 
     let currentRosterOrder = [];
-    let fieldingData = {}; 
+    let fieldingData = {};
+    let outPlayers = new Set();
     const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
     const INFIELD_POS = ["P", "C", "1B", "2B", "3B", "SS"];
 
     window.onload = function() {
+        initOut();
         initLineup();
         initFielding();
         renderRules(broncoRules);
@@ -236,30 +256,59 @@
     // --- LINEUP ---
     function initLineup() {
         const saved = localStorage.getItem('broncoLineup_v6');
-        if (saved) currentRosterOrder = JSON.parse(saved);
-        else currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); 
+        if (saved) {
+            const savedOrder = JSON.parse(saved);
+            // Merge saved order with current roster to pick up new fields (e.g. songUrl)
+            currentRosterOrder = savedOrder.map(p => {
+                const rosterEntry = teamRoster.find(r => r.name === p.name) || {};
+                return {...rosterEntry, ...p};
+            });
+        } else {
+            currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
+        }
         renderLineup();
     }
     function renderLineup() {
-        document.getElementById('lineupContainer').innerHTML = currentRosterOrder.map((player, index) => `
-            <li class="lineup-item">
+        document.getElementById('lineupContainer').innerHTML = currentRosterOrder.map((player, index) => {
+            const isOut = outPlayers.has(player.name);
+            const safeName = JSON.stringify(player.name); // properly escapes all special characters
+            const rawUrl = player.songUrl || '';
+            const songUrl = /^https?:\/\//.test(rawUrl) ? rawUrl : ''; // only allow http/https
+            return `
+            <li class="lineup-item${isOut ? ' player-is-out' : ''}">
                 <div style="display:flex; align-items:center; flex:1; min-width:0;">
                     <div class="player-order">${index + 1}</div>
                     <div class="player-info"><span class="player-name">${player.name}</span><span class="player-num">${player.number}</span></div>
                 </div>
                 <div style="display:flex; align-items:center;">
+                    ${songUrl ? `<a href="${songUrl}" target="_blank" rel="noopener" class="song-btn" title="Walk-up song">🎵</a>` : ''}
+                    <button class="out-toggle${isOut ? ' is-out' : ''}" onclick="toggleOut(${safeName})">${isOut ? '✕ OUT' : 'OUT'}</button>
                     <select class="pos-select-lineup" onchange="updateLineupPos(${index}, this.value)">
                         <option value="" ${player.pos===""?'selected':''}>-</option>
                         ${POSITIONS.slice(1).map(p => `<option value="${p}" ${player.pos===p?'selected':''}>${p}</option>`).join('')}
                     </select>
                     <div class="drag-handle">≡</div>
                 </div>
-            </li>
-        `).join('');
+            </li>`;
+        }).join('');
     }
     function updateLineupPos(index, value) { currentRosterOrder[index].pos = value; saveLineup(); }
     function saveLineup() { localStorage.setItem('broncoLineup_v6', JSON.stringify(currentRosterOrder)); }
     function resetLineup() { if(confirm("Reset batting order?")) { currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); saveLineup(); renderLineup(); }}
+
+    // --- OUT STATUS ---
+    function initOut() {
+        const saved = localStorage.getItem('broncoOut_v1');
+        if (saved) outPlayers = new Set(JSON.parse(saved));
+    }
+    function saveOut() { localStorage.setItem('broncoOut_v1', JSON.stringify([...outPlayers])); }
+    function toggleOut(playerName) {
+        if (outPlayers.has(playerName)) outPlayers.delete(playerName);
+        else outPlayers.add(playerName);
+        saveOut();
+        renderLineup();
+        renderFielding();
+    }
     function shareLineup() {
         let text = "⚾ Padres Lineup:\n";
         currentRosterOrder.forEach((p, i) => { text += `${i+1}. ${p.name} ${p.number} ${p.pos ? `(${p.pos})` : ""}\n`; });
@@ -277,10 +326,11 @@
     function renderFielding() {
         const table = document.getElementById('fieldingTable');
         
-        // 1. Calculate Sit Counts
+        // 1. Calculate Sit Counts (exclude OUT players)
         let playerSits = {};
         let minSits = 6; // Start high
         currentRosterOrder.forEach(p => {
+            if (outPlayers.has(p.name)) return; // OUT players don't count toward bench fairness
             let data = fieldingData[p.name] || ["","","","","",""];
             let sits = data.filter(pos => pos === "BN").length;
             playerSits[p.name] = sits;
@@ -294,29 +344,38 @@
         currentRosterOrder.forEach(player => {
             if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", ""];
             
-            // VALIDATION LOGIC
-            let sits = playerSits[player.name];
-            let infieldCount = fieldingData[player.name].filter(pos => INFIELD_POS.includes(pos)).length;
-            
-            let isSitViolator = (sits > minSits + 1); // Broke "No sit 2 until all sit 1"
-            let needsInfield = (infieldCount === 0);
-            
             let rowClass = "";
             let statusHtml = "";
-            
-            if (isSitViolator) {
-                rowClass = "row-err";
-                statusHtml = `<span class="status-text stat-err">Sit violation</span>`;
-            } else if (needsInfield) {
-                rowClass = "row-warn";
-                statusHtml = `<span class="status-text stat-warn">Needs Infield</span>`;
+
+            if (outPlayers.has(player.name)) {
+                rowClass = "row-out";
+                statusHtml = `<span class="status-text stat-err">OUT</span>`;
             } else {
-                statusHtml = `<span class="status-text stat-ok">Good</span>`;
+                // VALIDATION LOGIC
+                let sits = playerSits[player.name] || 0;
+                let infieldCount = fieldingData[player.name].filter(pos => INFIELD_POS.includes(pos)).length;
+                
+                let isSitViolator = (sits > minSits + 1); // "no player sits twice before all sit once"
+                let needsInfield = (infieldCount === 0);
+                
+                if (isSitViolator) {
+                    rowClass = "row-err";
+                    statusHtml = `<span class="status-text stat-err">Sit violation</span>`;
+                } else if (needsInfield) {
+                    rowClass = "row-warn";
+                    statusHtml = `<span class="status-text stat-warn">Needs Infield</span>`;
+                } else {
+                    statusHtml = `<span class="status-text stat-ok">Good</span>`;
+                }
             }
 
             html += `<tr class="${rowClass}"><td>${player.name}${statusHtml}</td>`;
             for(let i=0; i<6; i++) {
-                html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
+                if (outPlayers.has(player.name)) {
+                    html += `<td><select class="pos-select-small pos-bn" disabled><option>OUT</option></select></td>`;
+                } else {
+                    html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
+                }
             }
             html += `</tr>`;
         });
