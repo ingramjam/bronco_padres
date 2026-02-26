@@ -128,6 +128,7 @@
             <ul style="margin: 5px 0 0 15px; padding: 0;">
                 <li>No player sits 2 until all sit 1.</li>
                 <li>Everyone must play 1 inning Infield.</li>
+                <li id="benchCountNote" aria-live="polite"></li>
             </ul>
         </div>
         <div class="fielding-container">
@@ -353,6 +354,21 @@
             if(sits < minSits) minSits = sits;
         });
 
+        // 2. Dynamic bench count based on active player count
+        const activePlayers = Object.keys(playerSits).length;
+        const benchPerInning = Math.max(0, activePlayers - 9);
+        const maxFairSits = (benchPerInning > 0 && activePlayers > 0)
+            ? Math.ceil((benchPerInning * 6) / activePlayers)
+            : 0;
+        const benchNote = document.getElementById('benchCountNote');
+        if (benchNote) {
+            if (activePlayers <= 9) {
+                benchNote.textContent = `${activePlayers} active player${activePlayers !== 1 ? 's' : ''} – everyone fields every inning.`;
+            } else {
+                benchNote.textContent = `${activePlayers} active players → ${benchPerInning} bench slot${benchPerInning !== 1 ? 's' : ''} per inning (max ${maxFairSits} sit${maxFairSits !== 1 ? 's' : ''} per player).`;
+            }
+        }
+
         let html = `<thead><tr><th>Player</th>`;
         for(let i=1; i<=6; i++) html += `<th>${i}</th>`;
         html += `</tr></thead><tbody>`;
@@ -368,7 +384,7 @@
             let sits = playerSits[player.name] || 0;
             let infieldCount = fieldingData[player.name].filter(pos => INFIELD_POS.includes(pos)).length;
             
-            let isSitViolator = (sits > minSits + 1); // "no player sits twice before all sit once"
+            let isSitViolator = (sits > minSits + 1) || (maxFairSits > 0 && sits > maxFairSits);
             let needsInfield = (infieldCount === 0);
             
             if (isSitViolator) {
