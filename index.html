@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bronco Padres Manager</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="./data.js"></script>
     <style>
         :root {
             /* PADRES THEME */
@@ -194,43 +195,10 @@
 </div>
 
 <script>
-    // --- DATA ---
-    const SONG_FOLDER = "https://drive.google.com/drive/folders/1imDXA9Q52GXdS6x3aW17O9sH-Fzc7DWb?usp=drive_link";
-    const teamRoster = [
-        { name: "Jace Ingram",      number: "#3",  songUrl: SONG_FOLDER },
-        { name: "Jaxson Fonseca",   number: "#29", songUrl: SONG_FOLDER },
-        { name: "JD Mayberry",      number: "#51", songUrl: SONG_FOLDER },
-        { name: "Adam Enriquez",    number: "",    songUrl: SONG_FOLDER },
-        { name: "Blake Taylor",     number: "",    songUrl: SONG_FOLDER },
-        { name: "Brooks Schott",    number: "",    songUrl: SONG_FOLDER },
-        { name: "Declan Riley",     number: "",    songUrl: SONG_FOLDER },
-        { name: "Donovan Cox",      number: "",    songUrl: SONG_FOLDER },
-        { name: "Giovani Preciado", number: "",    songUrl: SONG_FOLDER },
-        { name: "Landon Hodgson",   number: "",    songUrl: SONG_FOLDER },
-        { name: "Myles Gonzalez",   number: "",    songUrl: SONG_FOLDER },
-        { name: "Thomas Cabral",    number: "",    songUrl: SONG_FOLDER }
-    ];
-
-    const broncoRules = [
-        { category: "Roster", title: "Team Size", content: "Roster: 10-13 players. Age: 11-12.", important: false, source: "Appx F.1" },
-        { category: "Game Time", title: "Duration & Limits", content: "Regulation: 7 innings. Complete: 4 innings. No new inning after 1 hr 50 mins. Hard stop 9:45 PM. Ties permitted.", important: true, source: "Appx F.3.A-B, F.9.C" },
-        { category: "Roster", title: "Minimum Play", content: "No player sits 2 innings until all sit 1. No player sits 3 until all sit 2. Must play 1 inning infield (Rec only).", important: true, source: "Appx F.3.D" },
-        { category: "Game Time", title: "Mercy Rule", content: "10 run lead after 5 complete innings (4 ½ if Home leads).", important: true, source: "Appx F.4" },
-        { category: "Pitching", title: "Daily Max Pitches", content: "Max 85 pitches/day. May finish batter if limit reached during AB.", important: true, source: "Appx F.5" },
-        { category: "Pitching", title: "Rest Days (11-12)", content: "1-20: 0 Days | 21-35: 1 Day | 36-50: 2 Days | 51-65: 3 Days | 66+: 4 Days.", important: true, source: "Appx F.5 Table" },
-        { category: "Pitching", title: "Pitcher Removal", content: "Once removed from mound, pitcher cannot return to pitch in same game.", important: true, source: "Appx F.5.D" },
-        { category: "Manager", title: "Mound Visits", content: "2 visits in one inning (same pitcher) = mandatory removal. Exception: Injury.", important: true, source: "Appx F.5.E" },
-        { category: "Pitching", title: "Hit Batters", content: "Pitcher removed immediately if they hit 3 batters in one game.", important: true, source: "Appx F.5.F" },
-        { category: "Batting", title: "Batting Order", content: "Continuous batting order. Everyone bats.", important: false, source: "Appx F.6" },
-        { category: "Base Running", title: "Courtesy Runners", content: "Allowed for Catcher w/ 2 outs. Must be last recorded out. Pinch runner allowed for injury only.", important: false, source: "Appx F.7" },
-        { category: "Conduct", title: "Unsportsmanlike", content: "Foul language or throwing equipment = Ejection + 1 game suspension. Must report to scorekeeper.", important: true, source: "Appx F.8" },
-        { category: "Base Running", title: "Slide or Avoid", content: "Must slide or avoid contact. Malicious contact = declared out.", important: true, source: "Appx F.10" },
-        { category: "Manager", title: "Umpire Interaction", content: "Judgment calls are final. Objecting to calls/unsportsmanlike conduct = Ejection.", important: true, source: "Appx F.11.B-C" },
-        { category: "Manager", title: "Appeals", content: "No appeals on Junior Umpire decisions. For rules appeals, Manager ONLY contacts Senior Umpire/Board.", important: true, source: "Appx F.11.D-E" },
-        { category: "Playoffs", title: "Tie Breaker", content: "Max 2 open innings. If still tied, coin flip determines winner.", important: false, source: "Appx F.12.B" }
-    ];
-
+    // --- STATE ---
     let currentRosterOrder = [];
+    let currentAudio = null;
+    let currentPlayingName = null;
     let fieldingData = {};
     let outPlayers = new Set();
     const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
@@ -261,19 +229,24 @@
             // Merge saved order with current roster to pick up new fields (e.g. songUrl)
             currentRosterOrder = savedOrder.map(p => {
                 const rosterEntry = teamRoster.find(r => r.name === p.name) || {};
-                return {...rosterEntry, ...p};
+                return {...rosterEntry, ...p, songUrl: rosterEntry.songUrl};
             });
         } else {
             currentRosterOrder = teamRoster.map(p => ({...p, pos: ""}));
         }
+        // Reconcile: players in outPlayers should have pos === 'OUT'
+        currentRosterOrder.forEach(p => {
+            if (outPlayers.has(p.name)) p.pos = 'OUT';
+        });
         renderLineup();
     }
     function renderLineup() {
         document.getElementById('lineupContainer').innerHTML = currentRosterOrder.map((player, index) => {
             const isOut = outPlayers.has(player.name);
             const safeName = JSON.stringify(player.name); // properly escapes all special characters
-            const rawUrl = player.songUrl || '';
-            const songUrl = /^https?:\/\//.test(rawUrl) ? rawUrl : ''; // only allow http/https
+            const songUrl = player.songUrl || '';
+            const isPlaying = currentPlayingName === player.name;
+            const safeSongUrl = JSON.stringify(songUrl);
             return `
             <li class="lineup-item${isOut ? ' player-is-out' : ''}">
                 <div style="display:flex; align-items:center; flex:1; min-width:0;">
@@ -281,18 +254,34 @@
                     <div class="player-info"><span class="player-name">${player.name}</span><span class="player-num">${player.number}</span></div>
                 </div>
                 <div style="display:flex; align-items:center;">
-                    ${songUrl ? `<a href="${songUrl}" target="_blank" rel="noopener" class="song-btn" title="Walk-up song">🎵</a>` : ''}
+                    ${songUrl ? `<button class="song-btn" onclick="toggleSong(${safeName}, ${safeSongUrl})" title="${isPlaying ? 'Stop' : 'Play'} walk-up song">${isPlaying ? '⏹' : '▶️'}</button>` : ''}
                     <button class="out-toggle${isOut ? ' is-out' : ''}" onclick="toggleOut(${safeName})">${isOut ? '✕ OUT' : 'OUT'}</button>
                     <select class="pos-select-lineup" onchange="updateLineupPos(${index}, this.value)">
                         <option value="" ${player.pos===""?'selected':''}>-</option>
                         ${POSITIONS.slice(1).map(p => `<option value="${p}" ${player.pos===p?'selected':''}>${p}</option>`).join('')}
+                        <option value="OUT" ${player.pos==='OUT'?'selected':''}>OUT</option>
                     </select>
                     <div class="drag-handle">≡</div>
                 </div>
             </li>`;
         }).join('');
     }
-    function updateLineupPos(index, value) { currentRosterOrder[index].pos = value; saveLineup(); }
+    function updateLineupPos(index, value) {
+        const player = currentRosterOrder[index];
+        const wasOut = outPlayers.has(player.name);
+        if (value === 'OUT') {
+            outPlayers.add(player.name);
+        } else if (wasOut) {
+            outPlayers.delete(player.name);
+        }
+        player.pos = value;
+        saveLineup();
+        if (value === 'OUT' || wasOut) {
+            saveOut();
+            renderLineup();
+            renderFielding();
+        }
+    }
     function saveLineup() { localStorage.setItem('broncoLineup_v6', JSON.stringify(currentRosterOrder)); }
     function resetLineup() { if(confirm("Reset batting order?")) { currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); saveLineup(); renderLineup(); }}
 
@@ -303,9 +292,16 @@
     }
     function saveOut() { localStorage.setItem('broncoOut_v1', JSON.stringify([...outPlayers])); }
     function toggleOut(playerName) {
-        if (outPlayers.has(playerName)) outPlayers.delete(playerName);
-        else outPlayers.add(playerName);
+        const player = currentRosterOrder.find(p => p.name === playerName);
+        if (outPlayers.has(playerName)) {
+            outPlayers.delete(playerName);
+            if (player && player.pos === 'OUT') player.pos = '';
+        } else {
+            outPlayers.add(playerName);
+            if (player) player.pos = 'OUT';
+        }
         saveOut();
+        saveLineup();
         renderLineup();
         renderFielding();
     }
@@ -314,6 +310,26 @@
         currentRosterOrder.forEach((p, i) => { text += `${i+1}. ${p.name} ${p.number} ${p.pos ? `(${p.pos})` : ""}\n`; });
         if (navigator.share) navigator.share({ title: 'Bronco Padres Lineup', text: text }).catch(console.error);
         else { navigator.clipboard.writeText(text); alert("Lineup copied!"); }
+    }
+    function toggleSong(playerName, songUrl) {
+        if (currentPlayingName === playerName) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+            currentPlayingName = null;
+            renderLineup();
+            return;
+        }
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+        const audio = new Audio(encodeURI(songUrl));
+        audio.play().catch(console.error);
+        audio.onended = () => { currentAudio = null; currentPlayingName = null; renderLineup(); };
+        currentAudio = audio;
+        currentPlayingName = playerName;
+        renderLineup();
     }
 
     // --- SMART FIELDING MATRIX ---
@@ -342,40 +358,32 @@
         html += `</tr></thead><tbody>`;
 
         currentRosterOrder.forEach(player => {
+            if (outPlayers.has(player.name)) return; // OUT players are hidden from fielding
             if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", ""];
             
             let rowClass = "";
             let statusHtml = "";
 
-            if (outPlayers.has(player.name)) {
-                rowClass = "row-out";
-                statusHtml = `<span class="status-text stat-err">OUT</span>`;
+            // VALIDATION LOGIC
+            let sits = playerSits[player.name] || 0;
+            let infieldCount = fieldingData[player.name].filter(pos => INFIELD_POS.includes(pos)).length;
+            
+            let isSitViolator = (sits > minSits + 1); // "no player sits twice before all sit once"
+            let needsInfield = (infieldCount === 0);
+            
+            if (isSitViolator) {
+                rowClass = "row-err";
+                statusHtml = `<span class="status-text stat-err">Sit violation</span>`;
+            } else if (needsInfield) {
+                rowClass = "row-warn";
+                statusHtml = `<span class="status-text stat-warn">Needs Infield</span>`;
             } else {
-                // VALIDATION LOGIC
-                let sits = playerSits[player.name] || 0;
-                let infieldCount = fieldingData[player.name].filter(pos => INFIELD_POS.includes(pos)).length;
-                
-                let isSitViolator = (sits > minSits + 1); // "no player sits twice before all sit once"
-                let needsInfield = (infieldCount === 0);
-                
-                if (isSitViolator) {
-                    rowClass = "row-err";
-                    statusHtml = `<span class="status-text stat-err">Sit violation</span>`;
-                } else if (needsInfield) {
-                    rowClass = "row-warn";
-                    statusHtml = `<span class="status-text stat-warn">Needs Infield</span>`;
-                } else {
-                    statusHtml = `<span class="status-text stat-ok">Good</span>`;
-                }
+                statusHtml = `<span class="status-text stat-ok">Good</span>`;
             }
 
             html += `<tr class="${rowClass}"><td>${player.name}${statusHtml}</td>`;
             for(let i=0; i<6; i++) {
-                if (outPlayers.has(player.name)) {
-                    html += `<td><select class="pos-select-small pos-bn" disabled><option>OUT</option></select></td>`;
-                } else {
-                    html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
-                }
+                html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
             }
             html += `</tr>`;
         });
