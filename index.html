@@ -83,10 +83,7 @@
         .ctrl-btn { border: none; padding: 15px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; }
         .btn-minus { background: #e0e0e0; color: #333; }
         .btn-plus { background: var(--primary); color: var(--secondary); font-weight: bold; }
-        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; background: var(--primary); border: 3px solid var(--secondary); padding: 3px; border-radius: 8px; }
-        .bingo-square { background: #fff; padding: 2px; text-align: center; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; border-radius: 2px; cursor: pointer; }
-        .bingo-square.checked { background: var(--secondary); color: var(--primary); }
-        .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; }
+        .tab-link { text-decoration: none; display: flex; align-items: center; justify-content: center; }
         .schedule-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--secondary); }
 
         /* OUT player */
@@ -107,10 +104,10 @@
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('lineup')">Lineup</button>
         <button class="tab-btn" onclick="switchTab('fielding')">Fielding</button>
-        <button class="tab-btn" onclick="switchTab('bingo')">Bingo</button>
         <button class="tab-btn" onclick="switchTab('rules')">Rules</button>
         <button class="tab-btn" onclick="switchTab('counter')">Pitch</button>
         <button class="tab-btn" onclick="switchTab('schedule')">Sched</button>
+        <a href="bingo.html" class="tab-btn tab-link">🎱 Bingo</a>
     </div>
 
     <div id="view-lineup" class="view-section active">
@@ -134,15 +131,8 @@
         <div class="fielding-container">
             <table class="fielding-table" id="fieldingTable"></table>
         </div>
+        <button class="action-btn btn-share" onclick="shareFielding()">Share Fielding 📤</button>
         <button class="action-btn btn-reset" onclick="resetFielding()">Clear All Positions</button>
-    </div>
-
-    <div id="view-bingo" class="view-section">
-        <div style="display:flex; flex-direction:column; align-items:center;">
-            <h2 style="color: var(--primary); margin:0 0 10px 0;">Game Time Bingo!</h2>
-            <div class="bingo-card" id="bingoCard"></div>
-            <button class="action-btn btn-share" id="bingoResetBtn" style="margin-top: 20px;">New Card</button>
-        </div>
     </div>
 
     <div id="view-rules" class="view-section">
@@ -210,7 +200,6 @@
         initLineup();
         initFielding();
         renderRules(broncoRules);
-        initBingo();
         
         new Sortable(document.getElementById('lineupContainer'), {
             handle: '.drag-handle', animation: 150,
@@ -420,6 +409,19 @@
         localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
         renderFielding(); // Re-render to update validation immediately
     }
+    function shareFielding() {
+        const innings = [1, 2, 3, 4, 5, 6];
+        let text = "⚾ Padres Fielding:\n";
+        text += "Player".padEnd(18) + innings.join("  ") + "\n";
+        currentRosterOrder.forEach(player => {
+            if (outPlayers.has(player.name)) return;
+            const data = fieldingData[player.name] || ["","","","","",""];
+            const row = data.map(p => (p || "-").padEnd(3)).join(" ");
+            text += player.name.padEnd(18) + row + "\n";
+        });
+        if (navigator.share) navigator.share({ title: 'Bronco Padres Fielding', text: text }).catch(console.error);
+        else { navigator.clipboard.writeText(text).then(() => alert("Fielding copied!")).catch(() => alert("Could not copy. Please copy manually.")); }
+    }
     function resetFielding() {
         if(confirm("Clear all positions?")) {
             teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", ""]; });
@@ -429,25 +431,6 @@
     }
 
     // --- UTILS ---
-    const baseballTerms = [ "Home Run", "My Kid Strikes Out", "Walk-In Run", "Out", "Foul Ball Out", "Double", "Triple", "Grand Slam", "Walk", "Pitcher Cries", "Catcher Cries", "Gopher Hole", "My Kid Scored", "Pick Off", "Steal", "Error", "RBI", "Dad Kicked Out", "Terrible Call", "Tie Shoes", "Hit By Pitch", "No Glove On", "Oven Mitt", "No Game Balls", "Wild Pitch" ];
-    function initBingo() {
-        const savedTerms = localStorage.getItem('bingoTerms');
-        if (savedTerms) createBingoCard(JSON.parse(savedTerms)); else newBingoCard();
-        document.getElementById('bingoResetBtn').addEventListener('click', newBingoCard);
-    }
-    function createBingoCard(terms) {
-        const bingoCard = document.getElementById('bingoCard'); bingoCard.innerHTML = ''; let idx = 0;
-        for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
-            const sq = document.createElement('div'); sq.classList.add('bingo-square');
-            if (r === 2 && c === 2) sq.classList.add('center-square');
-            else { sq.textContent = terms[idx++]; sq.onclick = () => sq.classList.toggle('checked'); }
-            bingoCard.appendChild(sq);
-        }
-    }
-    function newBingoCard() {
-        let arr = [...baseballTerms].sort(() => 0.5 - Math.random());
-        localStorage.setItem('bingoTerms', JSON.stringify(arr.slice(0, 24))); createBingoCard(arr.slice(0, 24));
-    }
     function renderRules(rules) { document.getElementById('rulesContainer').innerHTML = rules.map(r => `<div class="rule-card ${r.important ? 'important' : ''}"><h2>${r.title} <span class="category-tag">${r.category}</span></h2><p>${r.content}</p><div class="source">Source: ${r.source}</div></div>`).join(''); }
     function filterRules(cat) {
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === cat));
@@ -468,7 +451,7 @@
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
-        const map = { 'lineup': 0, 'fielding': 1, 'bingo': 2, 'rules': 3, 'counter': 4, 'schedule': 5 };
+        const map = { 'lineup': 0, 'fielding': 1, 'rules': 2, 'counter': 3, 'schedule': 4 };
         if(document.querySelectorAll('.tab-btn')[map[id]]) document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
         if(id === 'fielding') renderFielding();
     }
