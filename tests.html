@@ -448,6 +448,94 @@ group('URL State Sharing — encodeState / decodeState', () => {
     });
 });
 
+group('Cloud Sync — applyState Sanitization', () => {
+    // Pure re-implementation of applyState from index.html for testing
+    function applyState(state) {
+        const validNames = new Set(teamRoster.map(r => r.name));
+        const out = new Set((state.out || []).filter(n => validNames.has(n)));
+        const order = (state.order || [])
+            .filter(p => validNames.has(p.name))
+            .map(p => {
+                const rosterEntry = teamRoster.find(r => r.name === p.name);
+                return { ...rosterEntry, ...p, songUrl: rosterEntry.songUrl };
+            });
+        const rawFielding = state.fielding || {};
+        const fielding = {};
+        Object.keys(rawFielding).forEach(name => {
+            if (validNames.has(name)) fielding[name] = rawFielding[name];
+        });
+        return { order, fielding, out };
+    }
+
+    test('valid roster names are kept in order', () => {
+        const state = { order: teamRoster.map(p => ({ name: p.name, pos: '', number: p.number })), fielding: {}, out: [] };
+        const { order } = applyState(state);
+        assertEqual(order.length, teamRoster.length);
+    });
+
+    test('unknown names are stripped from order', () => {
+        const state = {
+            order: [{ name: 'Hacker McEvil', pos: 'P', number: '#0' }, { name: teamRoster[0].name, pos: '', number: teamRoster[0].number }],
+            fielding: {},
+            out: []
+        };
+        const { order } = applyState(state);
+        assertEqual(order.length, 1);
+        assertEqual(order[0].name, teamRoster[0].name);
+    });
+
+    test('unknown out-player names are stripped', () => {
+        const state = { order: [], fielding: {}, out: ['Unknown Player', teamRoster[0].name] };
+        const { out } = applyState(state);
+        assertEqual(out.size, 1);
+        assert(out.has(teamRoster[0].name));
+    });
+
+    test('unknown fielding entries are stripped', () => {
+        const state = {
+            order: [],
+            fielding: { 'Injected Name': ['P','P','P','P','P','P'], [teamRoster[0].name]: ['SS','','','','',''] },
+            out: []
+        };
+        const { fielding } = applyState(state);
+        assert(!('Injected Name' in fielding), 'unknown name should be stripped');
+        assert(teamRoster[0].name in fielding, 'valid name should be kept');
+    });
+
+    test('songUrl is always taken from local roster (not cloud)', () => {
+        const state = {
+            order: [{ name: teamRoster[0].name, pos: '', number: teamRoster[0].number, songUrl: 'evil.mp3' }],
+            fielding: {},
+            out: []
+        };
+        const { order } = applyState(state);
+        assertEqual(order[0].songUrl, teamRoster[0].songUrl, 'songUrl must come from local roster');
+    });
+
+    test('empty state produces empty results', () => {
+        const { order, fielding, out } = applyState({});
+        assertEqual(order.length, 0);
+        assertEqual(Object.keys(fielding).length, 0);
+        assertEqual(out.size, 0);
+    });
+
+    test('cloud URL uses ?bin= query parameter format', () => {
+        const fakeBinId = '6789abcdef0123456789';
+        const url = 'https://example.com/index.html?bin=' + fakeBinId;
+        const params = new URLSearchParams(new URL(url).search);
+        assertEqual(params.get('bin'), fakeBinId);
+    });
+
+    test('?bin= param is detected separately from #state= hash', () => {
+        const hashUrl = 'https://example.com/index.html#state=abc123';
+        const binUrl = 'https://example.com/index.html?bin=abc123';
+        const hashParams = new URLSearchParams(new URL(hashUrl).search);
+        const binParams = new URLSearchParams(new URL(binUrl).search);
+        assert(hashParams.get('bin') === null, 'hash URL should have no bin param');
+        assertEqual(binParams.get('bin'), 'abc123');
+    });
+});
+
 // ─── Final Summary ────────────────────────────────────────────────────────────
 const total = passed + failed;
 const summaryEl = document.getElementById('summary');
