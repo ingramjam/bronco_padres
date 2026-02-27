@@ -198,9 +198,75 @@
     const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
     const INFIELD_POS = ["P", "C", "1B", "2B", "3B", "SS"];
 
-    window.onload = function() {
-        const fromUrl = loadFromUrlHash();
-        if (fromUrl) {
+    // --- JSONBIN.IO CLOUD SYNC ---
+    const JSONBIN_MASTER_KEY = '$2a$10$lHXsVzeaAxnn8lmS/qDtwu.MAqUD.td9wq3hdW4AMUdmEenOZDa0W';
+    const JSONBIN_ACCESS_KEY = '$2a$10$gY/gyIQz2SYB45aqDMiolOQTEnovWn805SrrGsCjUzIqJGPwIE1lG';
+    const JSONBIN_API = 'https://api.jsonbin.io/v3/b';
+
+    async function saveToCloud() {
+        const state = {
+            order: currentRosterOrder.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
+            fielding: fieldingData,
+            out: [...outPlayers]
+        };
+        const res = await fetch(JSONBIN_API, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_MASTER_KEY,
+                'X-Bin-Name': 'padres-lineup',
+                'X-Bin-Private': 'false'
+            },
+            body: JSON.stringify(state)
+        });
+        if (!res.ok) throw new Error('Cloud save failed: ' + res.status);
+        const data = await res.json();
+        return data.metadata.id;
+    }
+
+    async function loadFromCloud(binId) {
+        const res = await fetch(JSONBIN_API + '/' + binId + '/latest', {
+            headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY }
+        });
+        if (!res.ok) throw new Error('Cloud load failed: ' + res.status);
+        const data = await res.json();
+        return data.record;
+    }
+
+    function applyState(state) {
+        const validNames = new Set(teamRoster.map(r => r.name));
+        outPlayers = new Set((state.out || []).filter(n => validNames.has(n)));
+        currentRosterOrder = (state.order || [])
+            .filter(p => validNames.has(p.name))
+            .map(p => {
+                const rosterEntry = teamRoster.find(r => r.name === p.name);
+                return { ...rosterEntry, ...p, songUrl: rosterEntry.songUrl };
+            });
+        const rawFielding = state.fielding || {};
+        fieldingData = {};
+        Object.keys(rawFielding).forEach(name => {
+            if (validNames.has(name)) fieldingData[name] = rawFielding[name];
+        });
+        isReadOnly = true;
+    }
+
+    window.onload = async function() {
+        const params = new URLSearchParams(location.search);
+        const binId = params.get('bin');
+        let loaded = false;
+        if (binId) {
+            try {
+                const state = await loadFromCloud(binId);
+                applyState(state);
+                loaded = true;
+            } catch(e) {
+                console.error('Cloud load failed:', e);
+            }
+        }
+        if (!loaded) {
+            loaded = loadFromUrlHash();
+        }
+        if (loaded) {
             renderLineup();
             renderFielding();
             const banner = document.createElement('div');
@@ -248,13 +314,7 @@
         if (!hash.startsWith('state=')) return false;
         const state = decodeState(hash.slice(6));
         if (!state) return false;
-        outPlayers = new Set(state.out || []);
-        currentRosterOrder = (state.order || []).map(p => {
-            const rosterEntry = teamRoster.find(r => r.name === p.name) || {};
-            return { ...rosterEntry, ...p, songUrl: rosterEntry.songUrl };
-        });
-        fieldingData = state.fielding || {};
-        isReadOnly = true;
+        applyState(state);
         return true;
     }
 
@@ -342,8 +402,14 @@
         renderLineup();
         renderFielding();
     }
-    function shareLineup() {
-        const url = getShareUrl();
+    async function shareLineup() {
+        let url;
+        try {
+            const binId = await saveToCloud();
+            url = location.origin + location.pathname + '?bin=' + binId;
+        } catch(e) {
+            url = getShareUrl();
+        }
         let text = "⚾ Padres Lineup:\n";
         currentRosterOrder.forEach((p, i) => { text += `${i+1}. ${p.name} ${p.number} ${p.pos ? `(${p.pos})` : ""}\n`; });
         if (navigator.share) navigator.share({ title: 'Bronco Padres Lineup', text: text, url: url }).catch(console.error);
@@ -457,8 +523,14 @@
         localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
         renderFielding(); // Re-render to update validation immediately
     }
-    function shareFielding() {
-        const url = getShareUrl();
+    async function shareFielding() {
+        let url;
+        try {
+            const binId = await saveToCloud();
+            url = location.origin + location.pathname + '?bin=' + binId;
+        } catch(e) {
+            url = getShareUrl();
+        }
         const innings = [1, 2, 3, 4, 5, 6];
         let text = "⚾ Padres Fielding:\n";
         text += "Player".padEnd(18) + innings.join("  ") + "\n";
