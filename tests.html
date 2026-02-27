@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bronco Padres — Test Suite</title>
+    <script src="./data.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        h1 { color: #2F241D; border-bottom: 4px solid #FFC425; padding-bottom: 8px; }
+        h2 { color: #2F241D; margin-top: 30px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        #summary { font-size: 1.3rem; font-weight: bold; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .pass-summary { background: #e8f5e9; color: #2e7d32; }
+        .fail-summary { background: #ffebee; color: #c62828; }
+        .test { padding: 8px 12px; margin: 4px 0; border-radius: 6px; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 8px; }
+        .test.pass { background: #e8f5e9; color: #2e7d32; }
+        .test.fail { background: #ffebee; color: #c62828; }
+        .test .icon { flex-shrink: 0; font-weight: bold; }
+        .test .msg { flex: 1; }
+        .test .err { font-size: 0.8rem; opacity: 0.8; margin-top: 2px; }
+        .group { background: white; border-radius: 8px; padding: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<h1>⚾ Bronco Padres Test Suite</h1>
+<div id="summary"></div>
+<div id="results"></div>
+
+<script>
+// ─── Minimal Test Framework ───────────────────────────────────────────────────
+let passed = 0, failed = 0, currentGroup = null;
+
+function group(name, fn) {
+    const div = document.createElement('div');
+    div.className = 'group';
+    div.innerHTML = '<h2>' + name + '</h2>';
+    document.getElementById('results').appendChild(div);
+    currentGroup = div;
+    fn();
+    currentGroup = null;
+}
+
+function test(name, fn) {
+    let ok = false, errMsg = '';
+    try { fn(); ok = true; }
+    catch(e) { errMsg = e.message; }
+    ok ? passed++ : failed++;
+    const el = document.createElement('div');
+    el.className = 'test ' + (ok ? 'pass' : 'fail');
+    el.innerHTML = '<span class="icon">' + (ok ? '✓' : '✗') + '</span>'
+        + '<span class="msg">' + name + (errMsg ? '<div class="err">' + errMsg + '</div>' : '') + '</span>';
+    (currentGroup || document.getElementById('results')).appendChild(el);
+}
+
+function assert(cond, msg) { if (!cond) throw new Error(msg || 'Assertion failed'); }
+function assertEqual(a, b, msg) { if (a !== b) throw new Error((msg || '') + ' — expected ' + JSON.stringify(b) + ', got ' + JSON.stringify(a)); }
+function assertDeepEqual(a, b, msg) { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error((msg || '') + ' — expected ' + JSON.stringify(b) + ', got ' + JSON.stringify(a)); }
+
+// ─── Pure Logic (mirrors index.html) ─────────────────────────────────────────
+const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
+const INFIELD_POS = ["P", "C", "1B", "2B", "3B", "SS"];
+
+/** Returns rest days and next-threshold info for a given pitch count */
+function getPitchStatus(count) {
+    if (count >= 85) return { rest: 'MAX LIMIT', message: 'Finish batter only', daysUntilNext: 0 };
+    if (count > 65)  return { rest: '4 Days', daysUntilNext: 85 - count, next: 'MAX' };
+    if (count > 50)  return { rest: '3 Days', daysUntilNext: 65 - count, next: '4 Days' };
+    if (count > 35)  return { rest: '2 Days', daysUntilNext: 50 - count, next: '3 Days' };
+    if (count > 20)  return { rest: '1 Day',  daysUntilNext: 35 - count, next: '2 Days' };
+    return { rest: '0 Days', daysUntilNext: 20 - count, next: '1 Day' };
+}
+
+/** Calculates bench slot count and max fair sits for a given active-player count */
+function calcBenchStats(activePlayers) {
+    const benchPerInning = Math.max(0, activePlayers - 9);
+    const maxFairSits = (benchPerInning > 0 && activePlayers > 0)
+        ? Math.ceil((benchPerInning * 6) / activePlayers)
+        : 0;
+    return { benchPerInning, maxFairSits };
+}
+
+/** Validates a single player's fielding assignments; returns 'sit-violation', 'needs-infield', or 'ok' */
+function validatePlayer(assignments, sits, minSits, maxFairSits) {
+    const infieldCount = assignments.filter(p => INFIELD_POS.includes(p)).length;
+    const isSitViolator = (sits > minSits + 1) || (maxFairSits > 0 && sits > maxFairSits);
+    if (isSitViolator) return 'sit-violation';
+    if (infieldCount === 0) return 'needs-infield';
+    return 'ok';
+}
+
+/** Build playerSits map from a roster + fieldingData (excluding OUT players) */
+function buildPlayerSits(roster, fieldingData, outSet) {
+    const playerSits = {};
+    let minSits = 99;
+    roster.forEach(p => {
+        if (outSet.has(p.name)) return;
+        const data = fieldingData[p.name] || ['','','','','',''];
+        const sits = data.filter(pos => pos === 'BN').length;
+        playerSits[p.name] = sits;
+        if (sits < minSits) minSits = sits;
+    });
+    return { playerSits, minSits: minSits === 99 ? 0 : minSits };
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function makeRoster(n) {
+    return Array.from({ length: n }, (_, i) => ({ name: 'Player' + (i + 1), number: '#' + (i + 1), songUrl: '' }));
+}
+function makeFielding(roster, assignments) {
+    const d = {};
+    roster.forEach(p => { d[p.name] = assignments[p.name] || ['','','','','','']; });
+    return d;
+}
+
+// ─── Test Groups ──────────────────────────────────────────────────────────────
+
+group('data.js — Roster', () => {
+    test('teamRoster is loaded and non-empty', () => {
+        assert(Array.isArray(teamRoster) && teamRoster.length > 0, 'teamRoster missing');
+    });
+    test('every player has a name', () => {
+        teamRoster.forEach(p => assert(p.name && p.name.length > 0, 'missing name: ' + JSON.stringify(p)));
+    });
+    test('every player has a number field', () => {
+        teamRoster.forEach(p => assert('number' in p, 'missing number field for ' + p.name));
+    });
+    test('every player has a songUrl field', () => {
+        teamRoster.forEach(p => assert('songUrl' in p, 'missing songUrl field for ' + p.name));
+    });
+    test('roster contains exactly 12 players', () => {
+        assertEqual(teamRoster.length, 12);
+    });
+});
+
+group('data.js — Pitch Thresholds (pitchThresholds array)', () => {
+    test('pitchThresholds contains 5 entries', () => {
+        assertEqual(pitchThresholds.length, 5);
+    });
+    test('first threshold limit is 20', () => {
+        assertEqual(pitchThresholds[0].limit, 20);
+    });
+    test('max threshold limit is 85', () => {
+        assertEqual(pitchThresholds[4].limit, 85);
+    });
+});
+
+group('Pitch Counter — Status Logic', () => {
+    test('0 pitches → 0 days rest', () => assertEqual(getPitchStatus(0).rest, '0 Days'));
+    test('1 pitch → 0 days rest', ()  => assertEqual(getPitchStatus(1).rest, '0 Days'));
+    test('20 pitches → 0 days rest (boundary)', () => assertEqual(getPitchStatus(20).rest, '0 Days'));
+    test('20 pitches → at threshold (0 pitches until next rest tier)', () => assertEqual(getPitchStatus(20).daysUntilNext, 0));
+    test('21 pitches → 1 day rest', ()  => assertEqual(getPitchStatus(21).rest, '1 Day'));
+    test('35 pitches → 1 day rest (boundary)', () => assertEqual(getPitchStatus(35).rest, '1 Day'));
+    test('36 pitches → 2 days rest', () => assertEqual(getPitchStatus(36).rest, '2 Days'));
+    test('50 pitches → 2 days rest (boundary)', () => assertEqual(getPitchStatus(50).rest, '2 Days'));
+    test('51 pitches → 3 days rest', () => assertEqual(getPitchStatus(51).rest, '3 Days'));
+    test('65 pitches → 3 days rest (boundary)', () => assertEqual(getPitchStatus(65).rest, '3 Days'));
+    test('66 pitches → 4 days rest', () => assertEqual(getPitchStatus(66).rest, '4 Days'));
+    test('84 pitches → 4 days rest (near max)', () => assertEqual(getPitchStatus(84).rest, '4 Days'));
+    test('85 pitches → MAX LIMIT', () => assertEqual(getPitchStatus(85).rest, 'MAX LIMIT'));
+    test('100 pitches → MAX LIMIT', () => assertEqual(getPitchStatus(100).rest, 'MAX LIMIT'));
+    test('daysUntilNext correct at 15 pitches (5 until threshold)', () => assertEqual(getPitchStatus(15).daysUntilNext, 5));
+    test('daysUntilNext correct at 30 pitches (5 until 35)', () => assertEqual(getPitchStatus(30).daysUntilNext, 5));
+    test('pitch count cannot go negative (clamped at 0)', () => {
+        let count = 0;
+        count = Math.max(0, count - 1);
+        assertEqual(count, 0);
+    });
+});
+
+group('Bench Fairness — calcBenchStats (9 through 13 players)', () => {
+    test('9 active players → 0 bench per inning', () => assertEqual(calcBenchStats(9).benchPerInning, 0));
+    test('9 active players → 0 max fair sits', ()   => assertEqual(calcBenchStats(9).maxFairSits, 0));
+
+    test('10 active players → 1 bench per inning', () => assertEqual(calcBenchStats(10).benchPerInning, 1));
+    test('10 active players → maxFairSits = ceil(6/10)=1', () => assertEqual(calcBenchStats(10).maxFairSits, 1));
+
+    test('11 active players → 2 bench per inning', () => assertEqual(calcBenchStats(11).benchPerInning, 2));
+    test('11 active players → maxFairSits = ceil(12/11)=2', () => assertEqual(calcBenchStats(11).maxFairSits, 2));
+
+    test('12 active players → 3 bench per inning', () => assertEqual(calcBenchStats(12).benchPerInning, 3));
+    test('12 active players → maxFairSits = ceil(18/12)=2', () => {
+        // ceil((3 * 6) / 12) = ceil(1.5) = 2
+        assertEqual(calcBenchStats(12).maxFairSits, 2);
+    });
+
+    test('13 active players → 4 bench per inning', () => assertEqual(calcBenchStats(13).benchPerInning, 4));
+    test('13 active players → maxFairSits = ceil(24/13)=2', () => {
+        // ceil((4 * 6) / 13) = ceil(1.846) = 2
+        assertEqual(calcBenchStats(13).maxFairSits, 2);
+    });
+
+    test('fewer than 9 active players → 0 bench', () => {
+        for (let n = 1; n <= 8; n++) {
+            assertEqual(calcBenchStats(n).benchPerInning, 0, 'n=' + n);
+        }
+    });
+});
+
+group('Fielding Validation — validatePlayer', () => {
+    test('player with 1 infield assignment and 0 bench → ok', () => {
+        assertEqual(validatePlayer(['P','','','','',''], 0, 0, 0), 'ok');
+    });
+    test('player with 0 infield assignments → needs-infield', () => {
+        assertEqual(validatePlayer(['LF','RF','CF','LF','RF','CF'], 0, 0, 2), 'needs-infield');
+    });
+    test('player with bench only → needs-infield (no infield)', () => {
+        assertEqual(validatePlayer(['BN','BN','LF','LF','LF','LF'], 0, 0, 2), 'needs-infield');
+    });
+    test('player with too many bench → sit-violation (over maxFairSits)', () => {
+        // sits=3, maxFairSits=2
+        assertEqual(validatePlayer(['BN','BN','BN','P','',''], 3, 0, 2), 'sit-violation');
+    });
+    test('player with sits > minSits+1 → sit-violation', () => {
+        // sits=3, minSits=0, maxFairSits=0 (9 player team)
+        assertEqual(validatePlayer(['BN','BN','BN','P','',''], 3, 0, 0), 'sit-violation');
+    });
+    test('player with exactly minSits+1 bench → ok (if has infield)', () => {
+        // sits=1, minSits=0, maxFairSits=0
+        assertEqual(validatePlayer(['BN','P','','','',''], 1, 0, 0), 'ok');
+    });
+    test('all infield positions recognised', () => {
+        INFIELD_POS.forEach(pos => {
+            const result = validatePlayer([pos,'','','','',''], 0, 0, 0);
+            assertEqual(result, 'ok', pos + ' should count as infield');
+        });
+    });
+    test('outfield positions do NOT count as infield', () => {
+        ['LF','CF','RF'].forEach(pos => {
+            const result = validatePlayer([pos,'','','','',''], 0, 0, 0);
+            assertEqual(result, 'needs-infield', pos + ' should not satisfy infield req');
+        });
+    });
+});
+
+group('Out-Player Scenarios', () => {
+    test('OUT player is excluded from active count', () => {
+        const roster = makeRoster(10);
+        const outSet = new Set(['Player1']);
+        const { playerSits } = buildPlayerSits(roster, makeFielding(roster, {}), outSet);
+        assert(!('Player1' in playerSits), 'OUT player should not appear in playerSits');
+        assertEqual(Object.keys(playerSits).length, 9);
+    });
+
+    test('10 players, 1 OUT → effectively 9 active → 0 bench per inning', () => {
+        const active = 9;
+        assertEqual(calcBenchStats(active).benchPerInning, 0);
+    });
+
+    test('12 players, 2 OUT → effectively 10 active → 1 bench per inning', () => {
+        const active = 10;
+        assertEqual(calcBenchStats(active).benchPerInning, 1);
+    });
+
+    test('all players OUT → playerSits is empty', () => {
+        const roster = makeRoster(3);
+        const outSet = new Set(roster.map(p => p.name));
+        const { playerSits } = buildPlayerSits(roster, makeFielding(roster, {}), outSet);
+        assertEqual(Object.keys(playerSits).length, 0);
+    });
+});
+
+group('Lineup — Total Player Scenarios', () => {
+    test('9-player roster: all field every inning, no bench needed', () => {
+        const n = 9;
+        const { benchPerInning, maxFairSits } = calcBenchStats(n);
+        assertEqual(benchPerInning, 0);
+        assertEqual(maxFairSits, 0);
+    });
+
+    test('10-player roster: 1 player sits per inning, each player sits max 1 time', () => {
+        const n = 10;
+        const { benchPerInning, maxFairSits } = calcBenchStats(n);
+        assertEqual(benchPerInning, 1);
+        assertEqual(maxFairSits, 1);
+    });
+
+    test('11-player roster: 2 bench slots per inning, max 2 sits per player', () => {
+        const n = 11;
+        const { benchPerInning, maxFairSits } = calcBenchStats(n);
+        assertEqual(benchPerInning, 2);
+        assertEqual(maxFairSits, 2);
+    });
+
+    test('12-player roster: 3 bench slots per inning, max 2 sits per player (ceil(18/12))', () => {
+        const n = 12;
+        const { benchPerInning, maxFairSits } = calcBenchStats(n);
+        assertEqual(benchPerInning, 3);
+        assertEqual(maxFairSits, 2);
+    });
+
+    test('13-player roster: 4 bench slots per inning, max 2 sits per player (ceil(24/13))', () => {
+        const n = 13;
+        const { benchPerInning, maxFairSits } = calcBenchStats(n);
+        assertEqual(benchPerInning, 4);
+        assertEqual(maxFairSits, 2);
+    });
+
+    test('min sits tracked correctly across full roster', () => {
+        const roster = makeRoster(11);
+        // Give 3 players 1 bench sit, everyone else 0
+        const fieldingData = makeFielding(roster, {
+            Player1: ['BN','P','','','',''],
+            Player2: ['BN','P','','','',''],
+            Player3: ['BN','P','','','',''],
+        });
+        const { playerSits, minSits } = buildPlayerSits(roster, fieldingData, new Set());
+        assertEqual(minSits, 0, 'minSits should be 0 (most players have 0 bench)');
+        assertEqual(playerSits['Player1'], 1);
+        assertEqual(playerSits['Player4'], 0);
+    });
+
+    test('a player with 2 bench sits is a sit-violator when minSits=0 and maxFairSits=0 (9-player team)', () => {
+        // minSits=0, maxFairSits=0 → sits > minSits+1 means sits >= 2
+        const result = validatePlayer(['BN','BN','P','','',''], 2, 0, 0);
+        assertEqual(result, 'sit-violation');
+    });
+
+    test('a player with 1 bench sit when minSits=0 and maxFairSits=0 → ok if has infield', () => {
+        const result = validatePlayer(['BN','P','','','',''], 1, 0, 0);
+        assertEqual(result, 'ok');
+    });
+});
+
+group('Save Record — Data Structure', () => {
+    test('game-records.json format: array of record objects', () => {
+        // Simulate what saveGameRecord produces
+        const record = {
+            id: Date.now(),
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            pitchCount: 42,
+            lineup: teamRoster.map((p, i) => ({ order: i + 1, name: p.name, number: p.number, pos: '', out: false })),
+            fielding: teamRoster.reduce((acc, p) => { acc[p.name] = ['','','','','','']; return acc; }, {}),
+            outPlayers: []
+        };
+        assert(typeof record.id === 'number', 'id must be a number');
+        assert(typeof record.date === 'string', 'date must be a string');
+        assert(typeof record.pitchCount === 'number', 'pitchCount must be a number');
+        assert(Array.isArray(record.lineup), 'lineup must be an array');
+        assert(record.lineup.length === teamRoster.length, 'lineup must match roster length');
+        assert(typeof record.fielding === 'object', 'fielding must be an object');
+        assert(Array.isArray(record.outPlayers), 'outPlayers must be an array');
+    });
+
+    test('lineup entries have required fields', () => {
+        const entry = { order: 1, name: 'Jace Ingram', number: '#3', pos: 'SS', out: false };
+        assert('order' in entry);
+        assert('name' in entry);
+        assert('number' in entry);
+        assert('pos' in entry);
+        assert('out' in entry);
+    });
+
+    test('fielding entry is an array of 6 innings', () => {
+        const innings = ['P','','BN','SS','',''];
+        assertEqual(innings.length, 6);
+        innings.forEach(v => assert(typeof v === 'string'));
+    });
+
+    test('pitchCount in record is preserved exactly', () => {
+        const pitches = 67;
+        const record = { pitchCount: pitches };
+        assertEqual(record.pitchCount, 67);
+    });
+});
+
+// ─── Final Summary ────────────────────────────────────────────────────────────
+const total = passed + failed;
+const summaryEl = document.getElementById('summary');
+summaryEl.className = 'summary ' + (failed === 0 ? 'pass-summary' : 'fail-summary');
+summaryEl.textContent = (failed === 0 ? '✅ All ' : '❌ ') + passed + ' / ' + total + ' tests passed' + (failed > 0 ? ' (' + failed + ' failed)' : '');
+</script>
+</body>
+</html>

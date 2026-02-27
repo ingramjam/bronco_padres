@@ -160,6 +160,8 @@
                 <button class="ctrl-btn btn-plus" onclick="updatePitch(1)">+ Pitch</button>
             </div>
             <button class="action-btn btn-reset" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
+            <button class="action-btn btn-share" onclick="saveGameRecord()">Save Record 💾</button>
+            <button class="action-btn btn-reset" onclick="exportGameRecords()">Export Records 📥</button>
         </div>
     </div>
 
@@ -199,6 +201,7 @@
         initOut();
         initLineup();
         initFielding();
+        initPitchCount();
         renderRules(broncoRules);
         
         new Sortable(document.getElementById('lineupContainer'), {
@@ -439,8 +442,13 @@
     }
     document.getElementById('searchInput').addEventListener('input', () => filterRules('All'));
     let pitchCount = 0; const thresholds = [ {l:20,r:"0 Days",n:"1 Day"}, {l:35,r:"1 Day",n:"2 Days"}, {l:50,r:"2 Days",n:"3 Days"}, {l:65,r:"3 Days",n:"4 Days"}, {l:85,r:"4 Days",n:"MAX"} ];
+    function initPitchCount() {
+        const saved = localStorage.getItem('broncoPitchCount');
+        if (saved !== null) { pitchCount = parseInt(saved, 10) || 0; updatePitch(0); }
+    }
     function updatePitch(c) {
         if (c === -999) pitchCount = 0; else pitchCount = Math.max(0, pitchCount + c);
+        localStorage.setItem('broncoPitchCount', pitchCount);
         document.getElementById('countDisplay').innerText = pitchCount;
         let s = thresholds[0], n = thresholds[0].l;
         if (pitchCount > 65) { s=thresholds[4]; n=85; } else if (pitchCount > 50) { s=thresholds[3]; n=65; } else if (pitchCount > 35) { s=thresholds[2]; n=50; } else if (pitchCount > 20) { s=thresholds[1]; n=35; }
@@ -454,6 +462,36 @@
         const map = { 'lineup': 0, 'fielding': 1, 'rules': 2, 'counter': 3, 'schedule': 4 };
         if(document.querySelectorAll('.tab-btn')[map[id]]) document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
         if(id === 'fielding') renderFielding();
+    }
+
+    // --- SAVE / EXPORT GAME RECORDS ---
+    function saveGameRecord() {
+        const record = {
+            id: Date.now(),
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            pitchCount: pitchCount,
+            lineup: currentRosterOrder.map((p, i) => ({
+                order: i + 1, name: p.name, number: p.number,
+                pos: p.pos || '', out: outPlayers.has(p.name)
+            })),
+            fielding: Object.keys(fieldingData).reduce((acc, k) => { acc[k] = fieldingData[k].slice(); return acc; }, {}),
+            outPlayers: [...outPlayers]
+        };
+        const records = JSON.parse(localStorage.getItem('broncoGameRecords') || '[]');
+        records.unshift(record);
+        localStorage.setItem('broncoGameRecords', JSON.stringify(records));
+        alert('Game record saved! ' + record.date + ' ' + record.time);
+    }
+    function exportGameRecords() {
+        const records = JSON.parse(localStorage.getItem('broncoGameRecords') || '[]');
+        if (records.length === 0) { alert('No saved records yet. Use "Save Record 💾" first.'); return; }
+        const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'game-records.json';
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 </script>
 </body>
