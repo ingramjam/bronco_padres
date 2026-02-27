@@ -365,6 +365,89 @@ group('Save Record — Data Structure', () => {
     });
 });
 
+group('URL State Sharing — encodeState / decodeState', () => {
+    // Pure re-implementations of the index.html functions for testing
+    function encodeState(order, fielding, out) {
+        const state = {
+            order: order.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
+            fielding: fielding,
+            out: [...out]
+        };
+        try { return btoa(encodeURIComponent(JSON.stringify(state))); }
+        catch(e) { return null; }
+    }
+    function decodeState(encoded) {
+        try { return JSON.parse(decodeURIComponent(atob(encoded))); }
+        catch(e) { return null; }
+    }
+
+    test('encode returns a non-empty string', () => {
+        const roster = makeRoster(3);
+        const result = encodeState(roster, makeFielding(roster, {}), new Set());
+        assert(typeof result === 'string' && result.length > 0, 'expected non-empty string');
+    });
+
+    test('encode + decode round-trips all player names', () => {
+        const roster = makeRoster(5);
+        const encoded = encodeState(roster, makeFielding(roster, {}), new Set());
+        const decoded = decodeState(encoded);
+        assert(decoded !== null, 'decode should succeed');
+        assertEqual(decoded.order.length, 5);
+        decoded.order.forEach((p, i) => assertEqual(p.name, 'Player' + (i + 1)));
+    });
+
+    test('out players are preserved through encode/decode', () => {
+        const roster = makeRoster(4);
+        const out = new Set(['Player2', 'Player4']);
+        const encoded = encodeState(roster, makeFielding(roster, {}), out);
+        const decoded = decodeState(encoded);
+        assertDeepEqual(decoded.out.sort(), ['Player2', 'Player4']);
+    });
+
+    test('fielding assignments are preserved through encode/decode', () => {
+        const roster = makeRoster(3);
+        const fielding = makeFielding(roster, { Player1: ['P', 'SS', 'BN', '1B', '', 'CF'] });
+        const encoded = encodeState(roster, fielding, new Set());
+        const decoded = decodeState(encoded);
+        assertDeepEqual(decoded.fielding['Player1'], ['P', 'SS', 'BN', '1B', '', 'CF']);
+    });
+
+    test('player positions (batting order pos) are preserved', () => {
+        const roster = [{ name: 'Test Player', number: '#5', pos: 'SS' }];
+        const encoded = encodeState(roster, {}, new Set());
+        const decoded = decodeState(encoded);
+        assertEqual(decoded.order[0].pos, 'SS');
+        assertEqual(decoded.order[0].number, '#5');
+    });
+
+    test('empty out set encodes and decodes to empty array', () => {
+        const roster = makeRoster(2);
+        const encoded = encodeState(roster, makeFielding(roster, {}), new Set());
+        const decoded = decodeState(encoded);
+        assertDeepEqual(decoded.out, []);
+    });
+
+    test('decodeState returns null for invalid base64 input', () => {
+        const result = decodeState('not-valid-base64!!!');
+        assert(result === null, 'should return null for invalid input');
+    });
+
+    test('decodeState returns null for empty string', () => {
+        const result = decodeState('');
+        assert(result === null, 'should return null for empty string');
+    });
+
+    test('encodes actual team roster names without error', () => {
+        const order = teamRoster.map(p => ({ ...p, pos: '' }));
+        const fielding = teamRoster.reduce((acc, p) => { acc[p.name] = ['P','BN','SS','LF','','1B']; return acc; }, {});
+        const encoded = encodeState(order, fielding, new Set(['Jace Ingram']));
+        assert(encoded !== null, 'encoding real roster should not fail');
+        const decoded = decodeState(encoded);
+        assertEqual(decoded.order.length, teamRoster.length);
+        assertEqual(decoded.out[0], 'Jace Ingram');
+    });
+});
+
 // ─── Final Summary ────────────────────────────────────────────────────────────
 const total = passed + failed;
 const summaryEl = document.getElementById('summary');

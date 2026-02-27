@@ -194,25 +194,69 @@
     let currentPlayingName = null;
     let fieldingData = {};
     let outPlayers = new Set();
+    let isReadOnly = false;
     const POSITIONS = ["-", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "BN"];
     const INFIELD_POS = ["P", "C", "1B", "2B", "3B", "SS"];
 
     window.onload = function() {
-        initOut();
-        initLineup();
-        initFielding();
+        const fromUrl = loadFromUrlHash();
+        if (fromUrl) {
+            renderLineup();
+            renderFielding();
+            const banner = document.createElement('div');
+            banner.style.cssText = 'background:#FFC425;color:#2F241D;padding:10px;text-align:center;font-weight:bold;font-size:0.9rem;border-radius:8px;margin-bottom:10px;';
+            banner.textContent = '👀 Viewing a shared lineup (read-only)';
+            const container = document.querySelector('.container');
+            container.insertBefore(banner, container.querySelector('.nav-tabs'));
+        } else {
+            initOut();
+            initLineup();
+            initFielding();
+            new Sortable(document.getElementById('lineupContainer'), {
+                handle: '.drag-handle', animation: 150,
+                onEnd: function (evt) {
+                    const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
+                    currentRosterOrder.splice(evt.newIndex, 0, movedItem);
+                    saveLineup(); renderLineup();
+                }
+            });
+        }
         initPitchCount();
         renderRules(broncoRules);
-        
-        new Sortable(document.getElementById('lineupContainer'), {
-            handle: '.drag-handle', animation: 150,
-            onEnd: function (evt) {
-                const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
-                currentRosterOrder.splice(evt.newIndex, 0, movedItem);
-                saveLineup(); renderLineup();
-            }
-        });
     };
+
+    // --- URL STATE SHARING ---
+    function encodeState() {
+        const state = {
+            order: currentRosterOrder.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
+            fielding: fieldingData,
+            out: [...outPlayers]
+        };
+        try { return btoa(encodeURIComponent(JSON.stringify(state))); }
+        catch(e) { return null; }
+    }
+    function decodeState(encoded) {
+        try { return JSON.parse(decodeURIComponent(atob(encoded))); }
+        catch(e) { return null; }
+    }
+    function getShareUrl() {
+        const encoded = encodeState();
+        return encoded ? (location.origin + location.pathname + '#state=' + encoded) : location.href;
+    }
+    function loadFromUrlHash() {
+        const hash = location.hash.slice(1);
+        if (!hash.startsWith('state=')) return false;
+        const state = decodeState(hash.slice(6));
+        if (!state) return false;
+        outPlayers = new Set(state.out || []);
+        currentRosterOrder = (state.order || []).map(p => {
+            const rosterEntry = teamRoster.find(r => r.name === p.name) || {};
+            return { ...rosterEntry, ...p, songUrl: rosterEntry.songUrl };
+        });
+        fieldingData = state.fielding || {};
+        isReadOnly = true;
+        return true;
+    }
 
     // --- LINEUP ---
     function initLineup() {
@@ -299,10 +343,11 @@
         renderFielding();
     }
     function shareLineup() {
+        const url = getShareUrl();
         let text = "⚾ Padres Lineup:\n";
         currentRosterOrder.forEach((p, i) => { text += `${i+1}. ${p.name} ${p.number} ${p.pos ? `(${p.pos})` : ""}\n`; });
-        if (navigator.share) navigator.share({ title: 'Bronco Padres Lineup', text: text }).catch(console.error);
-        else { navigator.clipboard.writeText(text); alert("Lineup copied!"); }
+        if (navigator.share) navigator.share({ title: 'Bronco Padres Lineup', text: text, url: url }).catch(console.error);
+        else navigator.clipboard.writeText(url).then(() => alert("Share link copied! Paste it to share with coaches.")).catch(() => { navigator.clipboard.writeText(text); alert("Lineup copied!"); });
     }
     function toggleSong(playerName, songUrl) {
         if (currentPlayingName === playerName) {
@@ -413,6 +458,7 @@
         renderFielding(); // Re-render to update validation immediately
     }
     function shareFielding() {
+        const url = getShareUrl();
         const innings = [1, 2, 3, 4, 5, 6];
         let text = "⚾ Padres Fielding:\n";
         text += "Player".padEnd(18) + innings.join("  ") + "\n";
@@ -422,8 +468,8 @@
             const row = data.map(p => (p || "-").padEnd(3)).join(" ");
             text += player.name.padEnd(18) + row + "\n";
         });
-        if (navigator.share) navigator.share({ title: 'Bronco Padres Fielding', text: text }).catch(console.error);
-        else { navigator.clipboard.writeText(text).then(() => alert("Fielding copied!")).catch(() => alert("Could not copy. Please copy manually.")); }
+        if (navigator.share) navigator.share({ title: 'Bronco Padres Fielding', text: text, url: url }).catch(console.error);
+        else navigator.clipboard.writeText(url).then(() => alert("Share link copied! Paste it to share with coaches.")).catch(() => navigator.clipboard.writeText(text).then(() => alert("Fielding copied!")).catch(() => alert("Could not copy. Please copy manually.")));
     }
     function resetFielding() {
         if(confirm("Clear all positions?")) {
