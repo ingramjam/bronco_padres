@@ -16,7 +16,11 @@
             --bench-bg: #e0e0e0; --infield-bg: #e8f5e9; --outfield-bg: #fff;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 80px; }
-        .container { max-width: 800px; margin: 0 auto; padding: 10px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 10px; display: none; }
+        .container.loaded { display: block; }
+        #loadingScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--text); font-size: 1.2rem; text-align: center; z-index: 2000; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .header-img { width: 100%; height: auto; display: block; margin-bottom: 10px; border-bottom: 4px solid var(--secondary); }
 
         /* TABS */
@@ -94,9 +98,42 @@
         .player-is-out .player-num { color: #bbb; }
         .row-out td:not(:first-child) { opacity: 0.35; pointer-events: none; }
         .row-out td:first-child { background-color: #f5f5f5 !important; color: #999; }
+
+        /* CREDENTIALS MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-dialog { background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-dialog h2 { margin: 0 0 15px 0; color: var(--primary); font-size: 1.5rem; }
+        .modal-dialog p { color: #666; margin: 10px 0; font-size: 0.95rem; }
+        .modal-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; }
+        .modal-input:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(255, 196, 37, 0.2); }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .modal-btn-primary { background: var(--secondary); color: var(--primary); }
+        .modal-btn-secondary { background: #e0e0e0; color: #333; }
+
+        /* SETTINGS PANEL */
+        .settings-section { background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .settings-section h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.1rem; border-bottom: 2px solid var(--secondary); padding-bottom: 8px; }
+        .settings-field { margin-bottom: 12px; }
+        .settings-label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 6px; font-size: 0.9rem; }
+        .settings-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+        .settings-input:focus { outline: none; border-color: var(--secondary); }
+        .settings-text { color: #666; font-size: 0.85rem; line-height: 1.4; margin-top: 5px; }
+        .settings-masked { font-family: monospace; background: #f5f5f5; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .cred-status { padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9rem; }
+        .cred-status.ok { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .cred-status.empty { background: #fff3e0; color: #e65100; border-left: 4px solid #e65100; }
     </style>
 </head>
 <body>
+
+<div id="loadingScreen">
+    <div style="text-align: center;">
+        <div class="spinner"></div>
+        <div>Loading team roster...</div>
+    </div>
+</div>
 
 <img src="https://www.escondidoyouthbaseball.com/portals/28785/teamhome/teamhome639045248653715983.png" alt="Padres Header" class="header-img">
 
@@ -107,6 +144,7 @@
         <button class="tab-btn" onclick="switchTab('rules')">Rules</button>
         <button class="tab-btn" onclick="switchTab('counter')">Pitch</button>
         <button class="tab-btn" onclick="switchTab('schedule')">Sched</button>
+        <button class="tab-btn" onclick="switchTab('settings')">⚙️</button>
         <a href="bingo.html" class="tab-btn tab-link">🎱 Bingo</a>
     </div>
 
@@ -185,6 +223,69 @@
             </li>
         </ul>
     </div>
+
+    <div id="view-settings" class="view-section">
+        <div class="settings-section">
+            <h3>🔐 JSONBin.io Credentials</h3>
+            <div id="credStatus" class="cred-status empty">No credentials stored</div>
+            <div class="settings-field">
+                <label class="settings-label">Master Key</label>
+                <input type="password" id="settingsMasterKey" class="settings-input" placeholder="Enter your JSONBin Master Key">
+                <div class="settings-text">Your Master Key allows saving new bins and managing your data.</div>
+            </div>
+            <div class="settings-field">
+                <label class="settings-label">Access Key</label>
+                <input type="password" id="settingsAccessKey" class="settings-input" placeholder="Enter your JSONBin Access Key">
+                <div class="settings-text">Your Access Key is used to load data from bins.</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn btn-share" style="flex:1; margin-top: 10px;" onclick="saveCredentials()">Save Credentials 🔒</button>
+                <button class="action-btn btn-reset" style="flex:1; margin-top: 10px;" onclick="clearCredentials()">Clear</button>
+            </div>
+            <div class="settings-text" style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 6px; border-left: 4px solid #ff9800;">
+                ⚠️ Your credentials are stored in browser localStorage for convenience. For better security, consider using environment variables if you deploy this app to a server.
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>☁️ Team Roster</h3>
+            <div class="settings-text" style="margin-bottom: 15px;">
+                <p style="margin: 5px 0;"><strong>The team roster and fielding configuration is managed by the manager.</strong></p>
+                <p style="margin: 5px 0;">Any changes you make are saved locally on your device only. To sync with the latest team configuration, click the button below.</p>
+            </div>
+            <button class="action-btn btn-reset" style="width: 100%;" onclick="loadDefaultsManual()">Sync with Team Roster 🔄</button>
+        </div>
+
+        <div class="settings-section">
+            <h3>👑 Admin Tools (Owner Only)</h3>
+            <div class="settings-text" style="margin-bottom: 15px;">
+                <p style="margin: 5px 0;"><strong>As the manager, use this to update the team roster and fielding for all users.</strong></p>
+                <p style="margin: 5px 0; font-size: 0.85rem; color: #999;">Changes made here will be saved to the cloud and visible to the entire team on their next sync.</p>
+            </div>
+            <button class="action-btn btn-share" style="width: 100%;" onclick="updateTeamRoster()">Update Team Roster ☁️</button>
+        </div>
+
+        <div class="settings-section">
+            <h3>📊 Sync Status</h3>
+            <div id="syncStatus" style="padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 0.9rem;">
+                <div style="color: #999;">Loading sync status...</div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>ℹ️ Quick Links</h3>
+            <div class="settings-text">
+                <p style="margin: 5px 0;"><strong>JSONBin.io Account:</strong> Visit <a href="https://jsonbin.io" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: bold;">jsonbin.io</a> to manage your bins and find your API keys.</p>
+                <p style="margin: 5px 0;"><strong>How to find your keys:</strong></p>
+                <ol style="margin: 5px 0; padding-left: 20px;">
+                    <li>Log in to jsonbin.io</li>
+                    <li>Go to Account settings (top right menu)</li>
+                    <li>Copy your Master Key and Access Key</li>
+                    <li>Paste them above and save</li>
+                </ol>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -202,8 +303,20 @@
     const JSONBIN_MASTER_KEY = '$2a$10$lHXsVzeaAxnn8lmS/qDtwu.MAqUD.td9wq3hdW4AMUdmEenOZDa0W';
     const JSONBIN_ACCESS_KEY = '$2a$10$gY/gyIQz2SYB45aqDMiolOQTEnovWn805SrrGsCjUzIqJGPwIE1lG';
     const JSONBIN_API = 'https://api.jsonbin.io/v3/b';
+    const DEFAULT_BIN_ID = '69a21a9443b1c97be9a4c2f3'; // Owner's shared roster
+    
+    // --- AUTO-SYNC TRACKING ---
+    let lastSyncTime = null;
+    let lastSyncState = null;
+    let apiCallsThisMonth = 0;
+    const SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+    const MONTHLY_API_LIMIT = 500;
+    const API_WARNING_THRESHOLD = 0.8; // Warn at 80% usage
+    let syncTimer = null;
 
     async function saveToCloud() {
+        const creds = getCredentials();
+        const masterKey = creds.masterKey || JSONBIN_MASTER_KEY;
         const state = {
             order: currentRosterOrder.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
             fielding: fieldingData,
@@ -213,7 +326,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_MASTER_KEY,
+                'X-Master-Key': masterKey,
                 'X-Bin-Name': 'padres-lineup',
                 'X-Bin-Private': 'false'
             },
@@ -225,15 +338,28 @@
     }
 
     async function loadFromCloud(binId) {
+        const creds = getCredentials();
+        const accessKey = creds.accessKey || JSONBIN_ACCESS_KEY;
         const res = await fetch(JSONBIN_API + '/' + binId + '/latest', {
-            headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY }
+            headers: { 'X-Access-Key': accessKey }
         });
         if (!res.ok) throw new Error('Cloud load failed: ' + res.status);
         const data = await res.json();
         return data.record;
     }
 
-    function applyState(state) {
+    function initSortable() {
+        new Sortable(document.getElementById('lineupContainer'), {
+            handle: '.drag-handle', animation: 150,
+            onEnd: function (evt) {
+                const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
+                currentRosterOrder.splice(evt.newIndex, 0, movedItem);
+                saveLineup(); renderLineup();
+            }
+        });
+    }
+
+    function applyState(state, readOnly = true) {
         const validNames = new Set(teamRoster.map(r => r.name));
         outPlayers = new Set((state.out || []).filter(n => validNames.has(n)));
         currentRosterOrder = (state.order || [])
@@ -247,48 +373,89 @@
         Object.keys(rawFielding).forEach(name => {
             if (validNames.has(name)) fieldingData[name] = rawFielding[name];
         });
-        isReadOnly = true;
+        isReadOnly = readOnly;
     }
 
     window.onload = async function() {
+        // Check if credentials are stored; if not, prompt user
+        const creds = getCredentials();
+        if (!creds.masterKey || !creds.accessKey) {
+            showCredentialModal();
+        }
+
+        // Load credential status in settings
+        updateCredentialStatus();
+
         const params = new URLSearchParams(location.search);
-        const binId = params.get('bin');
+        const queryBinId = params.get('bin');
         let loaded = false;
-        if (binId) {
+
+        // Try to load from URL parameter first
+        if (queryBinId) {
             try {
-                const state = await loadFromCloud(binId);
+                const state = await loadFromCloud(queryBinId);
                 applyState(state);
                 loaded = true;
             } catch(e) {
                 console.error('Cloud load failed:', e);
             }
         }
+
+        // If not loaded from URL, try URL hash
         if (!loaded) {
             loaded = loadFromUrlHash();
+        }        // If still not loaded, try to load defaults from cloud if set
+        if (!loaded) {
+            const binId = getDefaultBinId();
+            if (binId && creds.accessKey) {
+                try {
+                    const res = await fetch(JSONBIN_API + '/' + binId + '/latest', {
+                        headers: { 'X-Access-Key': creds.accessKey }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        applyState(data.record, false);
+                        // Hide loading and show app now since data is loaded
+                        document.getElementById('loadingScreen').style.display = 'none';
+                        document.querySelector('.container').classList.add('loaded');
+                        renderLineup();
+                        renderFielding();
+                        initSortable();
+                        loaded = true;
+                        isReadOnly = false;
+                    }
+                } catch(e) {
+                    console.error('Auto-load defaults failed:', e);
+                }
+            }
         }
+
         if (loaded) {
             renderLineup();
             renderFielding();
-            const banner = document.createElement('div');
-            banner.style.cssText = 'background:#FFC425;color:#2F241D;padding:10px;text-align:center;font-weight:bold;font-size:0.9rem;border-radius:8px;margin-bottom:10px;';
-            banner.textContent = '👀 Viewing a shared lineup (read-only)';
-            const container = document.querySelector('.container');
-            container.insertBefore(banner, container.querySelector('.nav-tabs'));
+            // Only show read-only banner for shared URL loads
+            if (isReadOnly) {
+                const banner = document.createElement('div');
+                banner.style.cssText = 'background:#FFC425;color:#2F241D;padding:10px;text-align:center;font-weight:bold;font-size:0.9rem;border-radius:8px;margin-bottom:10px;';
+                banner.textContent = '👀 Viewing a shared lineup (read-only)';
+                const container = document.querySelector('.container');
+                container.insertBefore(banner, container.querySelector('.nav-tabs'));
+            }
+            // Hide loading and show app
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.querySelector('.container').classList.add('loaded');
         } else {
             initOut();
             initLineup();
             initFielding();
-            new Sortable(document.getElementById('lineupContainer'), {
-                handle: '.drag-handle', animation: 150,
-                onEnd: function (evt) {
-                    const movedItem = currentRosterOrder.splice(evt.oldIndex, 1)[0];
-                    currentRosterOrder.splice(evt.newIndex, 0, movedItem);
-                    saveLineup(); renderLineup();
-                }
-            });
+            initSortable();
+            // Hide loading and show app
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.querySelector('.container').classList.add('loaded');
         }
         initPitchCount();
         renderRules(broncoRules);
+        startAutoSync();
     };
 
     // --- URL STATE SHARING ---
@@ -577,7 +744,7 @@
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
-        const map = { 'lineup': 0, 'fielding': 1, 'rules': 2, 'counter': 3, 'schedule': 4 };
+        const map = { 'lineup': 0, 'fielding': 1, 'rules': 2, 'counter': 3, 'schedule': 4, 'settings': 5 };
         if(document.querySelectorAll('.tab-btn')[map[id]]) document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
         if(id === 'fielding') renderFielding();
     }
@@ -611,6 +778,279 @@
         document.body.appendChild(a); a.click();
         document.body.removeChild(a); URL.revokeObjectURL(url);
     }
+
+    // --- AUTO-SYNC MANAGEMENT ---
+    function getCurrentStateString() {
+        return JSON.stringify({
+            order: currentRosterOrder.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
+            fielding: fieldingData,
+            out: [...outPlayers]
+        });
+    }
+
+    function hasStateChanged() {
+        if (!lastSyncState) return true;
+        return getCurrentStateString() !== lastSyncState;
+    }
+
+    function updateSyncStatusDisplay() {
+        const statusEl = document.getElementById('syncStatus');
+        if (!statusEl) return;
+        
+        const usagePercent = ((apiCallsThisMonth / MONTHLY_API_LIMIT) * 100).toFixed(0);
+        const lastSyncText = lastSyncTime 
+            ? new Date(lastSyncTime).toLocaleTimeString() 
+            : 'Never';
+        
+        statusEl.innerHTML = `
+            <div style="font-size: 0.85rem; color: #666;">
+                Last synced: <strong>${lastSyncText}</strong><br>
+                API calls today: <strong>${apiCallsThisMonth} / ${MONTHLY_API_LIMIT}</strong> (${usagePercent}%)
+                ${apiCallsThisMonth > MONTHLY_API_LIMIT * API_WARNING_THRESHOLD 
+                    ? '<div style="color: #e65100; margin-top: 5px; font-weight: bold;">⚠️ Approaching API limit</div>' 
+                    : ''}
+            </div>
+        `;
+    }
+
+    async function periodicSync() {
+        if (isReadOnly || !hasStateChanged()) return;
+        
+        const creds = getCredentials();
+        if (!creds.masterKey || !creds.accessKey) return;
+        
+        try {
+            const state = {
+                order: currentRosterOrder.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
+                fielding: fieldingData,
+                out: [...outPlayers]
+            };
+            
+            const res = await fetch(JSONBIN_API + '/' + DEFAULT_BIN_ID, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': creds.masterKey
+                },
+                body: JSON.stringify(state)
+            });
+            
+            if (res.ok) {
+                lastSyncTime = Date.now();
+                lastSyncState = getCurrentStateString();
+                apiCallsThisMonth += 1;
+                localStorage.setItem('syncStatus', JSON.stringify({
+                    lastSyncTime,
+                    apiCallsThisMonth,
+                    syncDate: new Date().toISOString().split('T')[0]
+                }));
+                updateSyncStatusDisplay();
+                console.log('✓ Auto-synced to cloud');
+            }
+        } catch(e) {
+            console.error('Auto-sync failed:', e);
+        }
+    }
+
+    function startAutoSync() {
+        // Load sync status from localStorage
+        const saved = localStorage.getItem('syncStatus');
+        if (saved) {
+            const status = JSON.parse(saved);
+            const today = new Date().toISOString().split('T')[0];
+            if (status.syncDate === today) {
+                apiCallsThisMonth = status.apiCallsThisMonth;
+                lastSyncTime = status.lastSyncTime;
+            } else {
+                // Reset counter for new day (assumes monthly budget resets daily for safety)
+                apiCallsThisMonth = 0;
+            }
+        }
+        
+        lastSyncState = getCurrentStateString();
+        
+        // Sync every 30 minutes
+        syncTimer = setInterval(() => {
+            periodicSync();
+        }, SYNC_INTERVAL);
+        
+        updateSyncStatusDisplay();
+    }
+
+    function stopAutoSync() {
+        if (syncTimer) {
+            clearInterval(syncTimer);
+            syncTimer = null;
+        }
+    }
+
+    // --- JSONBIN CREDENTIALS MANAGEMENT ---
+    function getCredentials() {
+        const creds = localStorage.getItem('jsonbin_credentials');
+        return creds ? JSON.parse(creds) : { masterKey: '', accessKey: '' };
+    }
+
+    function saveCredentials() {
+        const masterKey = document.getElementById('settingsMasterKey').value.trim();
+        const accessKey = document.getElementById('settingsAccessKey').value.trim();
+        if (!masterKey || !accessKey) {
+            alert('Please enter both Master Key and Access Key');
+            return;
+        }
+        localStorage.setItem('jsonbin_credentials', JSON.stringify({ masterKey, accessKey }));
+        updateCredentialStatus();
+        alert('Credentials saved! Your keys are stored securely in browser storage.');
+    }
+
+    function clearCredentials() {
+        if (confirm('Clear stored credentials? You can re-enter them later.')) {
+            localStorage.removeItem('jsonbin_credentials');
+            document.getElementById('settingsMasterKey').value = '';
+            document.getElementById('settingsAccessKey').value = '';
+            updateCredentialStatus();
+            alert('Credentials cleared.');
+        }
+    }
+
+    function updateCredentialStatus() {
+        const creds = getCredentials();
+        const status = document.getElementById('credStatus');
+        if (creds.masterKey && creds.accessKey) {
+            const masterHidden = creds.masterKey.substring(0, 10) + '••••••••••';
+            const accessHidden = creds.accessKey.substring(0, 10) + '••••••••••';
+            status.classList.remove('empty');
+            status.classList.add('ok');
+            status.innerHTML = `✓ Credentials stored<br><small style="font-size: 0.8rem;">Master: <span class="settings-masked">${masterHidden}</span><br>Access: <span class="settings-masked">${accessHidden}</span></small>`;
+        } else {
+            status.classList.remove('ok');
+            status.classList.add('empty');
+            status.innerHTML = 'No credentials stored';
+        }
+    }
+
+    // --- JSONBIN DEFAULTS MANAGEMENT ---
+    function getDefaultBinId() {
+        return DEFAULT_BIN_ID;
+    }
+
+    async function updateTeamRoster() {
+        // Admin function: save current state to the shared team bin
+        const creds = getCredentials();
+        if (!creds.masterKey || !creds.accessKey) {
+            alert('Please save your JSONBin credentials first in the Credentials section.');
+            return;
+        }
+
+        const state = {
+            order: currentRosterOrder.map(p => ({ name: p.name, pos: p.pos || '', number: p.number })),
+            fielding: fieldingData,
+            out: [...outPlayers]
+        };
+
+        try {
+            const res = await fetch(JSONBIN_API + '/' + DEFAULT_BIN_ID, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': creds.masterKey
+                },
+                body: JSON.stringify(state)
+            });
+
+            if (!res.ok) throw new Error('Save failed: ' + res.status + ' - ' + res.statusText);
+            alert('✓ Team roster updated!\n\nAll team members will see these changes when they sync.');
+        } catch(e) {
+            alert('Error updating roster: ' + e.message + '\n\nCheck your credentials and try again.');
+            console.error(e);
+        }
+    }
+
+    async function loadDefaultsManual() {
+        const creds = getCredentials();
+        const binId = getDefaultBinId();
+
+        if (!creds.accessKey) {
+            alert('Please save your JSONBin Access Key first.');
+            return;
+        }
+        if (!binId) {
+            alert('No default bin ID set. Create one by clicking "Save Current State as Default".');
+            return;
+        }
+
+        try {
+            const res = await fetch(JSONBIN_API + '/' + binId + '/latest', {
+                headers: { 'X-Access-Key': creds.accessKey }
+            });
+            if (!res.ok) throw new Error('Load failed: ' + res.status);
+            const data = await res.json();
+            applyState(data.record, false);
+            renderLineup();
+            renderFielding();
+            initSortable();
+            alert('✓ Defaults loaded from cloud!');
+        } catch(e) {
+            alert('Error loading defaults: ' + e.message);
+            console.error(e);
+        }
+    }
+
+    // --- PROMPT FOR CREDENTIALS ON FIRST LOAD ---
+    function showCredentialModal() {
+        const modal = document.getElementById('credentialModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    function hideCredentialModal() {
+        const modal = document.getElementById('credentialModal');
+        if (modal) modal.classList.remove('show');
+    }
+
+    function submitModalCredentials() {
+        const masterKey = document.getElementById('modalMasterKey').value.trim();
+        const accessKey = document.getElementById('modalAccessKey').value.trim();
+        if (!masterKey || !accessKey) {
+            alert('Please enter both keys');
+            return;
+        }
+        localStorage.setItem('jsonbin_credentials', JSON.stringify({ masterKey, accessKey }));
+        updateCredentialStatus();
+        hideCredentialModal();
+    }
 </script>
+
+<!-- CREDENTIALS MODAL -->
+<div id="credentialModal" class="modal-overlay">
+    <div class="modal-dialog">
+        <h2>🔐 JSONBin.io Setup</h2>
+        <p>Welcome! To use cloud sync and default configuration, you'll need your JSONBin.io API keys.</p>
+        <p><strong>Visit <a href="https://jsonbin.io" target="_blank" style="color: var(--primary); font-weight: bold;">jsonbin.io</a> to get your keys:</strong></p>
+        <ol style="font-size: 0.9rem; color: #666; line-height: 1.6;">
+            <li>Create a free account (or log in)</li>
+            <li>Go to <strong>Account Settings</strong> (top-right menu)</li>
+            <li>Copy your <strong>Master Key</strong></li>
+            <li>Copy your <strong>Access Key</strong></li>
+            <li>Paste them below</li>
+        </ol>
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 6px; color: var(--primary); font-size: 0.9rem;">Master Key</label>
+                <input type="password" id="modalMasterKey" class="modal-input" placeholder="Paste your Master Key">
+            </div>
+            <div>
+                <label style="display: block; font-weight: bold; margin-bottom: 6px; color: var(--primary); font-size: 0.9rem;">Access Key</label>
+                <input type="password" id="modalAccessKey" class="modal-input" placeholder="Paste your Access Key">
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-primary" onclick="submitModalCredentials()">Save & Continue</button>
+            <button class="modal-btn modal-btn-secondary" onclick="hideCredentialModal()">Skip for Now</button>
+        </div>
+        <p style="font-size: 0.75rem; color: #999; margin-top: 15px; text-align: center;">
+            💡 Tip: You can update your keys anytime in Settings (⚙️ tab)
+        </p>
+    </div>
+</div>
+
 </body>
 </html>
