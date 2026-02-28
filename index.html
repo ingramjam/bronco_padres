@@ -124,6 +124,35 @@
         .cred-status { padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.9rem; }
         .cred-status.ok { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
         .cred-status.empty { background: #fff3e0; color: #e65100; border-left: 4px solid #e65100; }
+        
+        /* SCHEDULE STYLING */
+        .schedule-month-header { font-weight: bold; color: white; background: var(--primary); padding: 12px; margin-top: 15px; margin-bottom: 10px; border-radius: 6px; font-size: 1.1rem; }
+        .schedule-event { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--secondary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .schedule-event.game { border-left-color: #d32f2f; background: #fff5f5; }
+        .schedule-event.practice { border-left-color: #2196F3; background: #f0f8ff; }
+        .schedule-event.special { border-left-color: #FF9800; background: #fff8f0; }
+        .schedule-day { font-weight: bold; font-size: 1rem; color: var(--primary); margin-bottom: 4px; }
+        .schedule-type { font-weight: bold; color: #666; font-size: 0.95rem; }
+        .schedule-location { font-size: 0.85rem; color: #999; margin: 4px 0; }
+        .schedule-time { font-weight: bold; color: var(--secondary); font-size: 1rem; }
+        
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            .fielding-table { min-width: 100%; font-size: 0.85rem; }
+            .fielding-table th { padding: 10px 2px; font-size: 0.7rem; }
+            .fielding-table td { padding: 8px 2px; }
+            .fielding-table td:first-child { 
+                min-width: 85px; 
+                font-size: 0.8rem;
+                padding-left: 3px;
+            }
+            .pos-select-small { 
+                padding: 10px 0; 
+                font-size: 0.75rem;
+                min-height: 32px;
+            }
+            .status-text { font-size: 0.6rem; }
+        }
     </style>
 </head>
 <body>
@@ -207,24 +236,10 @@
     </div>
 
     <div id="view-schedule" class="view-section">
-        <div class="rule-card" style="text-align: center; border-left: none;">
-            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">Open Team Schedule</a>
+        <div style="text-align: center; margin-bottom: 15px;">
+            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">📱 Open GameChanger</a>
         </div>
-        <h3 style="margin-left: 10px; color: var(--primary);">Weekly Schedule</h3>
-        <ul style="list-style:none; padding:0;">
-            <li class="schedule-item">
-                <div style="font-weight:bold; color:var(--primary);">EVERY TUESDAY</div>
-                <div style="font-size:1.1rem; font-weight:bold;">Team Practice</div>
-                <div style="color:#666;">5:30 PM - 7:30 PM</div>
-            </li>
-        </ul>
-        <h3 style="margin-left: 10px; color: var(--primary);">Upcoming Games</h3>
-        <ul style="list-style:none; padding:0;">
-             <li class="schedule-item" style="border-left-color: #ccc;">
-                <div style="color:#666; text-align: center; font-size:1.1rem; font-weight:bold;">TBD</div>
-                <div style="text-align: center; color:#666;">No games scheduled yet.</div>
-            </li>
-        </ul>
+        <div id="scheduleContainer"></div>
     </div>
 
     <div id="view-settings" class="view-section">
@@ -459,6 +474,7 @@
         }
         initPitchCount();
         renderRules(broncoRules);
+        renderSchedule();
         startAutoSync();
     };
 
@@ -739,6 +755,73 @@
     let currentPitcher = null;
     let pitchCounts = {}; // { playerName: count, ... }
     const thresholds = [ {l:20,r:"0 Days",n:"1 Day"}, {l:35,r:"1 Day",n:"2 Days"}, {l:50,r:"2 Days",n:"3 Days"}, {l:65,r:"3 Days",n:"4 Days"}, {l:85,r:"4 Days",n:"MAX"} ];
+    
+    // --- SCHEDULE DATA ---
+    const scheduleEvents = [
+        { month: 'January 2026', events: [
+            { date: 'TUE 27', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '6:30 PM' },
+            { date: 'SAT 31', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '1:00 PM' }
+        ]},
+        { month: 'February 2026', events: [
+            { date: 'TUE 3', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '5:30 PM' },
+            { date: 'SAT 7', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '1:00 PM' },
+            { date: 'TUE 10', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '5:30 PM' },
+            { date: 'SAT 14', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '1:00 PM' },
+            { date: 'TUE 24', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '5:30 PM' },
+            { date: 'SAT 28', type: 'Game', opponent: 'vs. Rockies Bronco', location: 'EYB Fields at Kit Carson Park - Bronco', time: '5:15 PM' }
+        ]},
+        { month: 'March 2026', events: [
+            { date: 'TUE 3', type: 'Practice', opponent: '', location: 'Kit Carson Park', time: '5:30 PM' },
+            { date: 'SAT 7', type: 'Game', opponent: '@ Orioles', location: 'EYB Fields at Kit Carson Park - Bronco', time: '5:15 PM' },
+            { date: 'SUN 8', type: 'Special', opponent: 'Picture Day and Hit-a-Thon', location: 'TBD', time: 'All Day' },
+            { date: 'TUE 10', type: 'Game', opponent: 'vs. Athletics', location: 'EYB Fields at Kit Carson Park - Mustang', time: '7:00 PM' },
+            { date: 'SAT 14', type: 'Game', opponent: '@ Pirates', location: 'EYB Fields at Kit Carson Park - Bronco', time: '3:00 PM' },
+            { date: 'TUE 17', type: 'Game', opponent: 'vs. White Sox', location: 'EYB Fields at Kit Carson Park - Bronco', time: '4:45 PM' },
+            { date: 'SAT 21', type: 'Game', opponent: '@ Blue Jays', location: 'EYB Fields at Kit Carson Park - Bronco', time: '12:45 PM' },
+            { date: 'TUE 24', type: 'Game', opponent: 'vs. Angels', location: 'EYB Fields at Kit Carson Park - Mustang', time: '4:45 PM' },
+            { date: 'SAT 28', type: 'Game', opponent: 'vs. Rockies Bronco', location: 'EYB Fields at Kit Carson Park - Bronco', time: '10:30 AM' },
+            { date: 'TUE 31', type: 'Game', opponent: '@ Orioles', location: 'EYB Fields at Kit Carson Park - Bronco', time: '7:00 PM' }
+        ]},
+        { month: 'April 2026', events: [
+            { date: 'TUE 14', type: 'Game', opponent: 'vs. Athletics', location: 'EYB Fields at Kit Carson Park - Mustang', time: '7:00 PM' },
+            { date: 'SAT 18', type: 'Game', opponent: '@ Pirates', location: 'EYB Fields at Kit Carson Park - Bronco', time: '3:00 PM' },
+            { date: 'TUE 21', type: 'Game', opponent: 'vs. White Sox', location: 'EYB Fields at Kit Carson Park - Bronco', time: '4:45 PM' },
+            { date: 'SAT 25', type: 'Game', opponent: '@ Blue Jays', location: 'EYB Fields at Kit Carson Park - Bronco', time: '10:30 AM' }
+        ]},
+        { month: 'May 2026', events: [
+            { date: 'SUN 3', type: 'Special', opponent: 'Pony Day at the Padres!', location: 'TBD', time: 'All Day' }
+        ]}
+    ];
+    
+    function renderSchedule() {
+        const container = document.getElementById('scheduleContainer');
+        if (!container) return;
+        
+        let html = '';
+        scheduleEvents.forEach(monthBlock => {
+            html += `<div class="schedule-month-header">${monthBlock.month}</div>`;
+            monthBlock.events.forEach(event => {
+                const type = event.type.toLowerCase();
+                const isGame = type === 'game';
+                const isPractice = type === 'practice';
+                const isSpecial = type === 'special';
+                let className = 'schedule-event';
+                if (isGame) className += ' game';
+                else if (isPractice) className += ' practice';
+                else if (isSpecial) className += ' special';
+                
+                html += `<div class="${className}">`;
+                html += `<div class="schedule-day">${event.date}</div>`;
+                const icon = isGame ? '⚾' : isPractice ? '🏃' : '🎉';
+                html += `<div class="schedule-type">${icon} ${event.type}</div>`;
+                if (event.opponent) html += `<div style="font-weight: bold; color: var(--primary); margin-top: 6px;">${event.opponent}</div>`;
+                if (event.location) html += `<div class="schedule-location">📍 ${event.location}</div>`;
+                html += `<div class="schedule-time">${event.time}</div>`;
+                html += `</div>`;
+            });
+        });
+        container.innerHTML = html;
+    }
     
     function initPitchCount() {
         // Load pitch counts for all players from localStorage
