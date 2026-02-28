@@ -187,7 +187,10 @@
 
     <div id="view-counter" class="view-section">
         <div class="counter-card">
-            <div style="color: #666; font-size: 0.9rem; text-transform: uppercase;">Current Count</div>
+            <div style="color: #666; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px;">Pitcher</div>
+            <select id="pitcherSelect" class="settings-input" onchange="switchPitcher(this.value)" style="margin-bottom: 15px; font-weight: bold;"></select>
+            
+            <div style="color: #666; font-size: 0.9rem; text-transform: uppercase; margin-top: 15px;">Pitch Count</div>
             <div class="pitch-display" id="countDisplay">0</div>
             <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
                 <span style="font-size: 1.5rem; font-weight: bold; color: var(--primary); display: block;" id="restDisplay">0 Days Rest</span>
@@ -197,7 +200,7 @@
                 <button class="ctrl-btn btn-minus" onclick="updatePitch(-1)">−</button>
                 <button class="ctrl-btn btn-plus" onclick="updatePitch(1)">+ Pitch</button>
             </div>
-            <button class="action-btn btn-reset" onclick="if(confirm('Reset counter?')) { updatePitch(-999); }">Reset Counter</button>
+            <button class="action-btn btn-reset" onclick="if(confirm('Reset this pitcher\'s count?')) { updatePitch(-999); }">Reset Counter</button>
             <button class="action-btn btn-share" onclick="saveGameRecord()">Save Record 💾</button>
             <button class="action-btn btn-reset" onclick="exportGameRecords()">Export Records 📥</button>
         </div>
@@ -377,18 +380,19 @@
     }
 
     window.onload = async function() {
-        // Check if credentials are stored; if not, prompt user
-        const creds = getCredentials();
-        if (!creds.masterKey || !creds.accessKey) {
-            showCredentialModal();
-        }
-
-        // Load credential status in settings
-        updateCredentialStatus();
-
         const params = new URLSearchParams(location.search);
         const queryBinId = params.get('bin');
+        let isSharedUrl = queryBinId || (location.hash && location.hash.startsWith('#state='));
         let loaded = false;
+
+        // Load credential status in settings
+        const creds = getCredentials();
+        updateCredentialStatus();
+
+        // Only show credential modal if NOT loading from a shared URL
+        if (!isSharedUrl && (!creds.masterKey || !creds.accessKey)) {
+            showCredentialModal();
+        }
 
         // Try to load from URL parameter first
         if (queryBinId) {
@@ -669,17 +673,21 @@
 
             html += `<tr class="${rowClass}"><td>${player.name}${statusHtml}</td>`;
             for(let i=0; i<6; i++) {
-                html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i])}</td>`;
+                html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i], isReadOnly)}</td>`;
             }
             html += `</tr>`;
         });
         html += `</tbody>`;
         table.innerHTML = html;
     }
-    function createPosSelect(playerName, inningIndex, currentVal) {
+    function createPosSelect(playerName, inningIndex, currentVal, readOnly = false) {
         let bgClass = "pos-outfield";
         if (currentVal === "BN") bgClass = "pos-bn";
         else if (INFIELD_POS.includes(currentVal)) bgClass = "pos-infield";
+        
+        if (readOnly) {
+            return `<span class="pos-select-small ${bgClass}" style="pointer-events: none; cursor: default; background: #f0f0f0; color: #666;">${currentVal || '-'}</span>`;
+        }
         
         let opts = POSITIONS.map(p => `<option value="${p}" ${p===currentVal?'selected':''}>${p}</option>`).join('');
         return `<select class="pos-select-small ${bgClass}" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
@@ -726,19 +734,65 @@
         renderRules(broncoRules.filter(r => (cat === 'All' || r.category === cat) && (r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q))));
     }
     document.getElementById('searchInput').addEventListener('input', () => filterRules('All'));
-    let pitchCount = 0; const thresholds = [ {l:20,r:"0 Days",n:"1 Day"}, {l:35,r:"1 Day",n:"2 Days"}, {l:50,r:"2 Days",n:"3 Days"}, {l:65,r:"3 Days",n:"4 Days"}, {l:85,r:"4 Days",n:"MAX"} ];
+    
+    // --- PITCH COUNT TRACKING (PER-PITCHER) ---
+    let currentPitcher = null;
+    let pitchCounts = {}; // { playerName: count, ... }
+    const thresholds = [ {l:20,r:"0 Days",n:"1 Day"}, {l:35,r:"1 Day",n:"2 Days"}, {l:50,r:"2 Days",n:"3 Days"}, {l:65,r:"3 Days",n:"4 Days"}, {l:85,r:"4 Days",n:"MAX"} ];
+    
     function initPitchCount() {
-        const saved = localStorage.getItem('broncoPitchCount');
-        if (saved !== null) { pitchCount = parseInt(saved, 10) || 0; updatePitch(0); }
+        // Load pitch counts for all players from localStorage
+        const saved = localStorage.getItem('broncoPitchCounts_v2');
+        if (saved) {
+            try {
+                pitchCounts = JSON.parse(saved);
+            } catch(e) {
+                pitchCounts = {};
+            }
+        }
+        // Set first player as current pitcher if available
+        if (currentRosterOrder.length > 0) {
+            currentPitcher = currentRosterOrder[0].name;
+            renderPitcherSelect();
+            updatePitchDisplay();
+        }
     }
+    
+    function renderPitcherSelect() {
+        const select = document.getElementById('pitcherSelect');
+        if (!select) return;
+        select.innerHTML = currentRosterOrder.map(p => 
+            `<option value="${p.name}" ${p.name === currentPitcher ? 'selected' : ''}>${p.name} (${pitchCounts[p.name] || 0})</option>`
+        ).join('');
+    }
+    
+    function switchPitcher(playerName) {
+        currentPitcher = playerName;
+        updatePitchDisplay();
+    }
+    
     function updatePitch(c) {
-        if (c === -999) pitchCount = 0; else pitchCount = Math.max(0, pitchCount + c);
-        localStorage.setItem('broncoPitchCount', pitchCount);
-        document.getElementById('countDisplay').innerText = pitchCount;
+        if (!currentPitcher) return;
+        if (!pitchCounts[currentPitcher]) pitchCounts[currentPitcher] = 0;
+        
+        if (c === -999) {
+            pitchCounts[currentPitcher] = 0;
+        } else {
+            pitchCounts[currentPitcher] = Math.max(0, pitchCounts[currentPitcher] + c);
+        }
+        
+        localStorage.setItem('broncoPitchCounts_v2', JSON.stringify(pitchCounts));
+        updatePitchDisplay();
+        renderPitcherSelect();
+    }
+    
+    function updatePitchDisplay() {
+        const count = pitchCounts[currentPitcher] || 0;
+        document.getElementById('countDisplay').innerText = count;
         let s = thresholds[0], n = thresholds[0].l;
-        if (pitchCount > 65) { s=thresholds[4]; n=85; } else if (pitchCount > 50) { s=thresholds[3]; n=65; } else if (pitchCount > 35) { s=thresholds[2]; n=50; } else if (pitchCount > 20) { s=thresholds[1]; n=35; }
-        document.getElementById('restDisplay').innerText = pitchCount>=85 ? "MAX LIMIT" : s.r + " Rest";
-        document.getElementById('thresholdDisplay').innerText = pitchCount>=85 ? "Finish batter only" : `${n - pitchCount} until ${s.n} Rest`;
+        if (count > 65) { s=thresholds[4]; n=85; } else if (count > 50) { s=thresholds[3]; n=65; } else if (count > 35) { s=thresholds[2]; n=50; } else if (count > 20) { s=thresholds[1]; n=35; }
+        document.getElementById('restDisplay').innerText = count>=85 ? "MAX LIMIT" : s.r + " Rest";
+        document.getElementById('thresholdDisplay').innerText = count>=85 ? "Finish batter only" : `${n - count} until ${s.n} Rest`;
     }
     function switchTab(id) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -755,7 +809,9 @@
             id: Date.now(),
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
-            pitchCount: pitchCount,
+            pitcher: currentPitcher,
+            pitchCount: pitchCounts[currentPitcher] || 0,
+            allPitchCounts: {...pitchCounts},
             lineup: currentRosterOrder.map((p, i) => ({
                 order: i + 1, name: p.name, number: p.number,
                 pos: p.pos || '', out: outPlayers.has(p.name)
@@ -766,7 +822,7 @@
         const records = JSON.parse(localStorage.getItem('broncoGameRecords') || '[]');
         records.unshift(record);
         localStorage.setItem('broncoGameRecords', JSON.stringify(records));
-        alert('Game record saved! ' + record.date + ' ' + record.time);
+        alert('Game record saved! ' + record.date + ' ' + record.time + ' (' + record.pitcher + ' - ' + record.pitchCount + ' pitches)');
     }
     function exportGameRecords() {
         const records = JSON.parse(localStorage.getItem('broncoGameRecords') || '[]');
