@@ -37,16 +37,16 @@ const pitchThresholds = [
 
 // 4. ROSTER
 const teamRoster = [
-    { name: "Jace Ingram",      number: "#3",  songUrl: "Jace Announcer + Song.mp3" },
-    { name: "Jaxson Fonseca",   number: "#29", songUrl: "Jaxson Announcer + Song.mp3" },
-    { name: "JD Mayberry",      number: "#51", songUrl: "JD Announcer + Song.mp3" },
-    { name: "Adam Enriquez",    number: "",    songUrl: "Adam Announcer + Song.mp3" },
-    { name: "Blake Taylor",     number: "",    songUrl: "Blake Announcer + Song.mp3" },
-    { name: "Brooks Schott",    number: "",    songUrl: "Brooks Announcer + Song.mp3" },
-    { name: "Declan Riley",     number: "",    songUrl: "Declan Announcer + Song.mp3" },
-    { name: "Donovan Cox",      number: "",    songUrl: "Donovan Announcer + Song.mp3" },
-    { name: "Giovani Preciado", number: "",    songUrl: "Giovani Announcer + Song.mp3" },
-    { name: "Landon Hodgson",   number: "",    songUrl: "Landon Announcer + Song.mp3" },
-    { name: "Myles Gonzalez",   number: "",    songUrl: "Myles Announcer + Song.mp3" },
-    { name: "Thomas Cabral",    number: "",    songUrl: "Thomas Announcer + Song.mp3" }
+    { name: "Jace Ingram",      number: "#3",  songUrl: "Jace.mp3" },
+    { name: "Jaxson Fonseca",   number: "#29", songUrl: "Jaxson.mp3" },
+    { name: "JD Mayberry",      number: "#51", songUrl: "JD.mp3" },
+    { name: "Adam Enriquez",    number: "",    songUrl: "Adam.mp3" },
+    { name: "Blake Taylor",     number: "",    songUrl: "Blake.mp3" },
+    { name: "Brooks Schott",    number: "",    songUrl: "Brooks.mp3" },
+    { name: "Declan Riley",     number: "",    songUrl: "Dec.mp3" },
+    { name: "Donovan Cox",      number: "",    songUrl: "Donovan.mp3" },
+    { name: "Giovani Preciado", number: "",    songUrl: "Gio.mp3" },
+    { name: "Landon Hodgson",   number: "",    songUrl: "Landon.mp3" },
+    { name: "Myles Gonzalez",   number: "",    songUrl: "Myles.mp3" },
+    { name: "Thomas Cabral",    number: "",    songUrl: "Tommy.mp3" }
 ];
