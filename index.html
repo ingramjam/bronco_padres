@@ -714,15 +714,15 @@
             }
         });
         
-        // Create options - disable field positions already used in this inning, but allow BN to be used multiple times
+        // Create options - disable field positions already used in this inning, but allow BN and "-" to be used multiple times
         let opts = POSITIONS.map(p => {
-            const isUsed = positionsInInning.has(p) && p !== currentVal;
+            const isUsed = positionsInInning.has(p) && p !== currentVal && p !== "-" && p !== "BN";
             return `<option value="${p}" ${p===currentVal?'selected':''} ${isUsed ? 'disabled' : ''}>${p}</option>`;
         }).join('');
         return `<select class="pos-select-small ${bgClass}" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
     }
     function updateFielding(playerName, inningIndex, value) {
-        if (!fieldingData[playerName]) fieldingData[playerName] = ["", "", "", "", "", ""];
+        if (!fieldingData[playerName]) fieldingData[playerName] = ["", "", "", "", "", "", ""];
         fieldingData[playerName][inningIndex] = value;
         localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
         renderFielding(); // Re-render to update validation immediately
