@@ -706,17 +706,17 @@
             return `<span class="pos-select-small ${bgClass}" style="pointer-events: none; cursor: default; background: #f0f0f0; color: #666;">${currentVal || '-'}</span>`;
         }
         
-        // Get positions already assigned in this inning
+        // Get positions already assigned in this inning (excluding BN and "-")
         let positionsInInning = new Set();
         currentRosterOrder.forEach(p => {
-            if (fieldingData[p.name] && fieldingData[p.name][inningIndex] && fieldingData[p.name][inningIndex] !== "-") {
+            if (fieldingData[p.name] && fieldingData[p.name][inningIndex] && fieldingData[p.name][inningIndex] !== "-" && fieldingData[p.name][inningIndex] !== "BN") {
                 positionsInInning.add(fieldingData[p.name][inningIndex]);
             }
         });
         
-        // Create options - disable positions already used in this inning
+        // Create options - disable field positions already used in this inning, but allow BN to be used multiple times
         let opts = POSITIONS.map(p => {
-            const isUsed = positionsInInning.has(p) && p !== currentVal && p !== "-";
+            const isUsed = positionsInInning.has(p) && p !== currentVal;
             return `<option value="${p}" ${p===currentVal?'selected':''} ${isUsed ? 'disabled' : ''}>${p}</option>`;
         }).join('');
         return `<select class="pos-select-small ${bgClass}" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
