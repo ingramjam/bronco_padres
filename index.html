@@ -630,11 +630,16 @@
         if (savedFielding) {
             fieldingData = JSON.parse(savedFielding);
             // Normalize any old 6-element arrays to 7 elements
+            let needsSave = false;
             Object.keys(fieldingData).forEach(playerName => {
                 if (fieldingData[playerName].length < 7) {
                     fieldingData[playerName] = [...fieldingData[playerName], ...Array(7 - fieldingData[playerName].length).fill("")];
+                    needsSave = true;
                 }
             });
+            if (needsSave) {
+                localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
+            }
         }
         else teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", "", ""]; });
         renderFielding();
