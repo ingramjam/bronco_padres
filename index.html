@@ -627,12 +627,27 @@
     // --- SMART FIELDING MATRIX ---
     function initFielding() {
         const savedFielding = localStorage.getItem('broncoFielding_v6');
-        if (savedFielding) fieldingData = JSON.parse(savedFielding);
+        if (savedFielding) {
+            fieldingData = JSON.parse(savedFielding);
+            // Normalize any old 6-element arrays to 7 elements
+            Object.keys(fieldingData).forEach(playerName => {
+                if (fieldingData[playerName].length < 7) {
+                    fieldingData[playerName] = [...fieldingData[playerName], ...Array(7 - fieldingData[playerName].length).fill("")];
+                }
+            });
+        }
         else teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", "", ""]; });
         renderFielding();
     }
     function renderFielding() {
         const table = document.getElementById('fieldingTable');
+        
+        // Normalize all fielding arrays to 7 elements (fix for old 6-element arrays)
+        Object.keys(fieldingData).forEach(playerName => {
+            if (fieldingData[playerName].length < 7) {
+                fieldingData[playerName] = [...fieldingData[playerName], ...Array(7 - fieldingData[playerName].length).fill("")];
+            }
+        });
         
         // 1. Calculate Sit Counts (exclude OUT players)
         let playerSits = {};
