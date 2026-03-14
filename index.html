@@ -232,6 +232,7 @@
             <button class="action-btn btn-reset" onclick="if(confirm('Reset this pitcher\'s count?')) { updatePitch(-999); }">Reset Counter</button>
             <button class="action-btn btn-share" onclick="saveGameRecord()">Save Record 💾</button>
             <button class="action-btn btn-reset" onclick="exportGameRecords()">Export Records 📥</button>
+            <button class="action-btn btn-share" onclick="printPDF()">Print PDF 📄</button>
         </div>
     </div>
 
@@ -627,7 +628,7 @@
     function initFielding() {
         const savedFielding = localStorage.getItem('broncoFielding_v6');
         if (savedFielding) fieldingData = JSON.parse(savedFielding);
-        else teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", ""]; });
+        else teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", "", ""]; });
         renderFielding();
     }
     function renderFielding() {
@@ -635,10 +636,10 @@
         
         // 1. Calculate Sit Counts (exclude OUT players)
         let playerSits = {};
-        let minSits = 6; // Start high
+        let minSits = 7; // Start high
         currentRosterOrder.forEach(p => {
             if (outPlayers.has(p.name)) return; // OUT players don't count toward bench fairness
-            let data = fieldingData[p.name] || ["","","","","",""];
+            let data = fieldingData[p.name] || ["","","","","","",""];
             let sits = data.filter(pos => pos === "BN").length;
             playerSits[p.name] = sits;
             if(sits < minSits) minSits = sits;
@@ -648,7 +649,7 @@
         const activePlayers = Object.keys(playerSits).length;
         const benchPerInning = Math.max(0, activePlayers - 9);
         const maxFairSits = (benchPerInning > 0 && activePlayers > 0)
-            ? Math.ceil((benchPerInning * 6) / activePlayers)
+            ? Math.ceil((benchPerInning * 7) / activePlayers)
             : 0;
         const benchNote = document.getElementById('benchCountNote');
         if (benchNote) {
@@ -660,12 +661,12 @@
         }
 
         let html = `<thead><tr><th>Player</th>`;
-        for(let i=1; i<=6; i++) html += `<th>${i}</th>`;
+        for(let i=1; i<=7; i++) html += `<th>${i}</th>`;
         html += `</tr></thead><tbody>`;
 
         currentRosterOrder.forEach(player => {
             if (outPlayers.has(player.name)) return; // OUT players are hidden from fielding
-            if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", ""];
+            if (!fieldingData[player.name]) fieldingData[player.name] = ["", "", "", "", "", "", ""];
             
             let rowClass = "";
             let statusHtml = "";
@@ -688,7 +689,7 @@
             }
 
             html += `<tr class="${rowClass}"><td>${player.name}${statusHtml}</td>`;
-            for(let i=0; i<6; i++) {
+            for(let i=0; i<7; i++) {
                 html += `<td>${createPosSelect(player.name, i, fieldingData[player.name][i], isReadOnly)}</td>`;
             }
             html += `</tr>`;
@@ -705,7 +706,19 @@
             return `<span class="pos-select-small ${bgClass}" style="pointer-events: none; cursor: default; background: #f0f0f0; color: #666;">${currentVal || '-'}</span>`;
         }
         
-        let opts = POSITIONS.map(p => `<option value="${p}" ${p===currentVal?'selected':''}>${p}</option>`).join('');
+        // Get positions already assigned in this inning
+        let positionsInInning = new Set();
+        currentRosterOrder.forEach(p => {
+            if (fieldingData[p.name] && fieldingData[p.name][inningIndex] && fieldingData[p.name][inningIndex] !== "-") {
+                positionsInInning.add(fieldingData[p.name][inningIndex]);
+            }
+        });
+        
+        // Create options - disable positions already used in this inning
+        let opts = POSITIONS.map(p => {
+            const isUsed = positionsInInning.has(p) && p !== currentVal && p !== "-";
+            return `<option value="${p}" ${p===currentVal?'selected':''} ${isUsed ? 'disabled' : ''}>${p}</option>`;
+        }).join('');
         return `<select class="pos-select-small ${bgClass}" onchange="updateFielding('${playerName}', ${inningIndex}, this.value)">${opts}</select>`;
     }
     function updateFielding(playerName, inningIndex, value) {
@@ -722,12 +735,12 @@
         } catch(e) {
             url = getShareUrl();
         }
-        const innings = [1, 2, 3, 4, 5, 6];
+        const innings = [1, 2, 3, 4, 5, 6, 7];
         let text = "⚾ Padres Fielding:\n";
         text += "Player".padEnd(18) + innings.join("  ") + "\n";
         currentRosterOrder.forEach(player => {
             if (outPlayers.has(player.name)) return;
-            const data = fieldingData[player.name] || ["","","","","",""];
+            const data = fieldingData[player.name] || ["","","","","","",""];
             const row = data.map(p => (p || "-").padEnd(3)).join(" ");
             text += player.name.padEnd(18) + row + "\n";
         });
@@ -736,7 +749,7 @@
     }
     function resetFielding() {
         if(confirm("Clear all positions?")) {
-            teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", ""]; });
+            teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", "", ""]; });
             localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
             renderFielding();
         }
@@ -916,6 +929,79 @@
         a.href = url; a.download = 'game-records.json';
         document.body.appendChild(a); a.click();
         document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+    
+    function printPDF() {
+        const printWindow = window.open('', '_blank');
+        const innings = [1, 2, 3, 4, 5, 6, 7];
+        let html = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Bronco Padres Lineup & Fielding</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: white; }
+        h1 { text-align: center; color: #2F241D; border-bottom: 3px solid #FFC425; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #2F241D; color: white; font-weight: bold; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .section { page-break-inside: avoid; margin-bottom: 30px; }
+        .print-date { text-align: right; font-size: 0.9em; color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>⚾ Bronco Padres Manager</h1>
+    <div class="print-date">Printed: ${new Date().toLocaleString()}</div>
+    
+    <div class="section">
+        <h2>Lineup</h2>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Player</th><th>Number</th><th>Position</th></tr>
+            </thead>
+            <tbody>`;
+        
+        currentRosterOrder.forEach((p, i) => {
+            const isOut = outPlayers.has(p.name);
+            html += `<tr style="${isOut ? 'text-decoration: line-through; color: #999;' : ''}">
+                <td>${i + 1}</td>
+                <td>${p.name}</td>
+                <td>${p.number}</td>
+                <td>${p.pos || '-'}</td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table></div>
+    
+    <div class="section">
+        <h2>Fielding (7 Innings)</h2>
+        <table>
+            <thead>
+                <tr><th>Player</th>`;
+        
+        innings.forEach(i => {
+            html += `<th>${i}</th>`;
+        });
+        
+        html += `</tr></thead><tbody>`;
+        
+        currentRosterOrder.forEach(p => {
+            if (outPlayers.has(p.name)) return;
+            const data = fieldingData[p.name] || ["", "", "", "", "", "", ""];
+            html += `<tr><td><strong>${p.name}</strong></td>`;
+            data.forEach(pos => {
+                html += `<td>${pos || '-'}</td>`;
+            });
+            html += `</tr>`;
+        });
+        
+        html += `</tbody></table></div>
+</body>
+</html>`;
+        
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.print();
     }
 
     // --- AUTO-SYNC MANAGEMENT ---
