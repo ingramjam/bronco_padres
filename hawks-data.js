@@ -1,7 +1,7 @@
-// data.js
+// hawks-data.js — San Diego Hawks team data
 
 // 1. RULE SET
-const broncoRules = [
+const hawksRules = [
     { category: "Roster", title: "Team Size", content: "Roster: 10-13 players. Age: 11-12.", important: false, source: "Appx F.1" },
     { category: "Game Time", title: "Duration & Limits", content: "Regulation: 7 innings. Complete: 4 innings. No new inning after 1 hr 50 mins. Hard stop 9:45 PM. Ties permitted.", important: true, source: "Appx F.3.A-B, F.9.C" },
     { category: "Roster & Batting", title: "Minimum Play", content: "No player sits 2 innings until all sit 1. No player sits 3 until all sit 2. Must play 1 inning infield (Rec only).", important: true, source: "Appx F.3.D" },

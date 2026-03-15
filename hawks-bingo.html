@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Padres Game Bingo</title>
+    <title>San Diego Hawks Game Bingo</title>
     <style>
         :root {
-            --primary: #2F241D; --secondary: #FFC425; --bg: #f4f4f4;
+            --primary: #002244; --secondary: #FFD700; --bg: #f4f4f4;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 0; }
         .container { max-width: 500px; margin: 0 auto; padding: 15px; }
@@ -17,12 +17,12 @@
         .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; background: var(--primary); border: 3px solid var(--secondary); padding: 3px; border-radius: 8px; }
         .bingo-square { background: #fff; padding: 2px; text-align: center; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; border-radius: 2px; cursor: pointer; }
         .bingo-square.checked { background: var(--secondary); color: var(--primary); }
-        .center-square { background-image: url("https://dt5602vnjxv0c.cloudfront.net/portals/28785/logo638424003336325100.png"); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; }
+        .center-square { background-image: url("https://www.sandiegohawks.com/uploads/1/2/1/4/121496622/published/hawks-circle-logo-color-800-600.png"); background-size: 80%; background-repeat: no-repeat; background-position: center; background-color: white; pointer-events: none; }
         .action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; background: var(--secondary); color: var(--primary); }
     </style>
 </head>
 <body>
-<img src="https://www.escondidoyouthbaseball.com/portals/28785/teamhome/teamhome639045248653715983.png" alt="Padres Header" class="header-img">
+<img src="https://www.sandiegohawks.com/uploads/1/2/1/4/121496622/published/hawks-circle-logo-color-800-600.png" alt="Hawks Header" class="header-img">
 <div class="container">
     
     <div style="display:flex; flex-direction:column; align-items:center;">
@@ -55,12 +55,12 @@
 
     function newBingoCard() {
         let arr = [...baseballTerms].sort(() => 0.5 - Math.random());
-        localStorage.setItem('bingoTerms', JSON.stringify(arr.slice(0, 24)));
+        localStorage.setItem('hawksBingoTerms', JSON.stringify(arr.slice(0, 24)));
         createBingoCard(arr.slice(0, 24));
     }
 
     function initBingo() {
-        const savedTerms = localStorage.getItem('bingoTerms');
+        const savedTerms = localStorage.getItem('hawksBingoTerms');
         if (savedTerms) createBingoCard(JSON.parse(savedTerms)); else newBingoCard();
         document.getElementById('bingoResetBtn').addEventListener('click', newBingoCard);
     }

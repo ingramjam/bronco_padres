@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bronco Padres Manager</title>
+    <title>San Diego Hawks Manager</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <script src="./data.js"></script>
+    <script src="./hawks-data.js"></script>
     <style>
         :root {
-            /* PADRES THEME */
-            --primary: #2F241D; --secondary: #FFC425; --bg: #f4f4f4;
-            --card-bg: #ffffff; --text: #2F241D; --warning: #d32f2f; --gc-blue: #0086d1;
+            /* HAWKS THEME */
+            --primary: #002244; --secondary: #FFD700; --bg: #f4f4f4;
+            --card-bg: #ffffff; --text: #002244; --warning: #d32f2f; --gc-blue: #0086d1;
             /* STATUS COLORS */
             --ok: #2e7d32; --warn: #ef6c00; --error: #c62828;
             --bench-bg: #e0e0e0; --infield-bg: #e8f5e9; --outfield-bg: #fff;
@@ -44,7 +44,7 @@
         .fielding-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 5px; }
         .fielding-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .fielding-table th { background: var(--primary); color: white; padding: 8px; font-size: 0.8rem; text-align: center; position: sticky; left: 0; z-index: 10; }
-        .fielding-table th:not(:first-child) { background: #443a33; position: static; }
+        .fielding-table th:not(:first-child) { background: #0a3a6b; position: static; }
         .fielding-table td { border-bottom: 1px solid #eee; padding: 4px; text-align: center; }
         
         /* Sticky Name Column & Status */
@@ -164,7 +164,7 @@
     </div>
 </div>
 
-<img src="https://www.escondidoyouthbaseball.com/portals/28785/teamhome/teamhome639045248653715983.png" alt="Padres Header" class="header-img">
+<img src="https://www.sandiegohawks.com/uploads/1/2/1/4/121496622/published/hawks-circle-logo-color-800-600.png" alt="Hawks Header" class="header-img">
 
 <div class="container">
     <div class="nav-tabs">
@@ -174,7 +174,7 @@
         <button class="tab-btn" onclick="switchTab('counter')">Pitch</button>
         <button class="tab-btn" onclick="switchTab('schedule')">Sched</button>
         <button class="tab-btn" onclick="switchTab('settings')">⚙️</button>
-        <a href="bingo.html" class="tab-btn tab-link">🎱 Bingo</a>
+        <a href="hawks-bingo.html" class="tab-btn tab-link">🎱 Bingo</a>
     </div>
 
     <div id="view-lineup" class="view-section active">
@@ -238,7 +238,7 @@
 
     <div id="view-schedule" class="view-section">
         <div style="text-align: center; margin-bottom: 15px;">
-            <a href="https://web.gc.com/teams/oygknL58ynlG?utm_source=Web&utm_campaign=team_share_link" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">📱 Open GameChanger</a>
+            <a href="https://www.sandiegohawks.com/" target="_blank" style="background: var(--gc-blue); color: white; text-decoration: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; display: inline-block;">🦅 San Diego Hawks</a>
         </div>
         <div id="scheduleContainer"></div>
     </div>
@@ -346,7 +346,7 @@
             headers: {
                 'Content-Type': 'application/json',
                 'X-Master-Key': masterKey,
-                'X-Bin-Name': 'padres-lineup',
+                'X-Bin-Name': 'hawks-lineup',
                 'X-Bin-Private': 'false'
             },
             body: JSON.stringify(state)
@@ -456,7 +456,7 @@
             // Only show read-only banner for shared URL loads
             if (isReadOnly) {
                 const banner = document.createElement('div');
-                banner.style.cssText = 'background:#FFC425;color:#2F241D;padding:10px;text-align:center;font-weight:bold;font-size:0.9rem;border-radius:8px;margin-bottom:10px;';
+                banner.style.cssText = 'background:#FFD700;color:#002244;padding:10px;text-align:center;font-weight:bold;font-size:0.9rem;border-radius:8px;margin-bottom:10px;';
                 banner.textContent = '👀 Viewing a shared lineup (read-only)';
                 const container = document.querySelector('.container');
                 container.insertBefore(banner, container.querySelector('.nav-tabs'));
@@ -474,7 +474,7 @@
             document.querySelector('.container').classList.add('loaded');
         }
         initPitchCount();
-        renderRules(broncoRules);
+        renderRules(hawksRules);
         renderSchedule();
         startAutoSync();
     };
@@ -508,7 +508,7 @@
 
     // --- LINEUP ---
     function initLineup() {
-        const saved = localStorage.getItem('broncoLineup_v6');
+        const saved = localStorage.getItem('hawksLineup_v1');
         if (saved) {
             const savedOrder = JSON.parse(saved);
             // Merge saved order with current roster to pick up new fields (e.g. songUrl)
@@ -567,15 +567,15 @@
             renderFielding();
         }
     }
-    function saveLineup() { localStorage.setItem('broncoLineup_v6', JSON.stringify(currentRosterOrder)); }
+    function saveLineup() { localStorage.setItem('hawksLineup_v1', JSON.stringify(currentRosterOrder)); }
     function resetLineup() { if(confirm("Reset batting order?")) { currentRosterOrder = teamRoster.map(p => ({...p, pos: ""})); saveLineup(); renderLineup(); }}
 
     // --- OUT STATUS ---
     function initOut() {
-        const saved = localStorage.getItem('broncoOut_v1');
+        const saved = localStorage.getItem('hawksOut_v1');
         if (saved) outPlayers = new Set(JSON.parse(saved));
     }
-    function saveOut() { localStorage.setItem('broncoOut_v1', JSON.stringify([...outPlayers])); }
+    function saveOut() { localStorage.setItem('hawksOut_v1', JSON.stringify([...outPlayers])); }
     function toggleOut(playerName) {
         const player = currentRosterOrder.find(p => p.name === playerName);
         if (outPlayers.has(playerName)) {
@@ -598,9 +598,9 @@
         } catch(e) {
             url = getShareUrl();
         }
-        let text = "⚾ Padres Lineup:\n";
+        let text = "⚾ Hawks Lineup:\n";
         currentRosterOrder.forEach((p, i) => { text += `${i+1}. ${p.name} ${p.number} ${p.pos ? `(${p.pos})` : ""}\n`; });
-        if (navigator.share) navigator.share({ title: 'Bronco Padres Lineup', text: text, url: url }).catch(console.error);
+        if (navigator.share) navigator.share({ title: 'San Diego Hawks Lineup', text: text, url: url }).catch(console.error);
         else navigator.clipboard.writeText(url).then(() => alert("Share link copied! Paste it to share with coaches.")).catch(() => { navigator.clipboard.writeText(text); alert("Lineup copied!"); });
     }
     function toggleSong(playerName, songUrl) {
@@ -626,7 +626,7 @@
 
     // --- SMART FIELDING MATRIX ---
     function initFielding() {
-        const savedFielding = localStorage.getItem('broncoFielding_v6');
+        const savedFielding = localStorage.getItem('hawksFielding_v1');
         if (savedFielding) {
             fieldingData = JSON.parse(savedFielding);
             // Normalize any old 6-element arrays to 7 elements
@@ -638,7 +638,7 @@
                 }
             });
             if (needsSave) {
-                localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
+                localStorage.setItem('hawksFielding_v1', JSON.stringify(fieldingData));
             }
         }
         else teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", "", ""]; });
@@ -744,7 +744,7 @@
     function updateFielding(playerName, inningIndex, value) {
         if (!fieldingData[playerName]) fieldingData[playerName] = ["", "", "", "", "", "", ""];
         fieldingData[playerName][inningIndex] = value;
-        localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
+        localStorage.setItem('hawksFielding_v1', JSON.stringify(fieldingData));
         renderFielding(); // Re-render to update validation immediately
     }
     async function shareFielding() {
@@ -756,7 +756,7 @@
             url = getShareUrl();
         }
         const innings = [1, 2, 3, 4, 5, 6, 7];
-        let text = "⚾ Padres Fielding:\n";
+        let text = "⚾ Hawks Fielding:\n";
         text += "Player".padEnd(18) + innings.join("  ") + "\n";
         currentRosterOrder.forEach(player => {
             if (outPlayers.has(player.name)) return;
@@ -764,13 +764,13 @@
             const row = data.map(p => (p || "-").padEnd(3)).join(" ");
             text += player.name.padEnd(18) + row + "\n";
         });
-        if (navigator.share) navigator.share({ title: 'Bronco Padres Fielding', text: text, url: url }).catch(console.error);
+        if (navigator.share) navigator.share({ title: 'San Diego Hawks Fielding', text: text, url: url }).catch(console.error);
         else navigator.clipboard.writeText(url).then(() => alert("Share link copied! Paste it to share with coaches.")).catch(() => navigator.clipboard.writeText(text).then(() => alert("Fielding copied!")).catch(() => alert("Could not copy. Please copy manually.")));
     }
     function resetFielding() {
         if(confirm("Clear all positions?")) {
             teamRoster.forEach(p => { fieldingData[p.name] = ["", "", "", "", "", "", ""]; });
-            localStorage.setItem('broncoFielding_v6', JSON.stringify(fieldingData));
+            localStorage.setItem('hawksFielding_v1', JSON.stringify(fieldingData));
             renderFielding();
         }
     }
@@ -780,7 +780,7 @@
     function filterRules(cat) {
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === cat));
         const q = document.getElementById('searchInput').value.toLowerCase();
-        renderRules(broncoRules.filter(r => (cat === 'All' || r.category === cat) && (r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q))));
+        renderRules(hawksRules.filter(r => (cat === 'All' || r.category === cat) && (r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q))));
     }
     document.getElementById('searchInput').addEventListener('input', () => filterRules('All'));
     
@@ -858,7 +858,7 @@
     
     function initPitchCount() {
         // Load pitch counts for all players from localStorage
-        const saved = localStorage.getItem('broncoPitchCounts_v2');
+        const saved = localStorage.getItem('hawksPitchCounts_v1');
         if (saved) {
             try {
                 pitchCounts = JSON.parse(saved);
@@ -897,7 +897,7 @@
             pitchCounts[currentPitcher] = Math.max(0, pitchCounts[currentPitcher] + c);
         }
         
-        localStorage.setItem('broncoPitchCounts_v2', JSON.stringify(pitchCounts));
+        localStorage.setItem('hawksPitchCounts_v1', JSON.stringify(pitchCounts));
         updatePitchDisplay();
         renderPitcherSelect();
     }
@@ -935,13 +935,13 @@
             fielding: Object.keys(fieldingData).reduce((acc, k) => { acc[k] = fieldingData[k].slice(); return acc; }, {}),
             outPlayers: [...outPlayers]
         };
-        const records = JSON.parse(localStorage.getItem('broncoGameRecords') || '[]');
+        const records = JSON.parse(localStorage.getItem('hawksGameRecords') || '[]');
         records.unshift(record);
-        localStorage.setItem('broncoGameRecords', JSON.stringify(records));
+        localStorage.setItem('hawksGameRecords', JSON.stringify(records));
         alert('Game record saved! ' + record.date + ' ' + record.time + ' (' + record.pitcher + ' - ' + record.pitchCount + ' pitches)');
     }
     function exportGameRecords() {
-        const records = JSON.parse(localStorage.getItem('broncoGameRecords') || '[]');
+        const records = JSON.parse(localStorage.getItem('hawksGameRecords') || '[]');
         if (records.length === 0) { alert('No saved records yet. Use "Save Record 💾" first.'); return; }
         const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -957,20 +957,20 @@
         let html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Bronco Padres Lineup & Fielding</title>
+    <title>San Diego Hawks Lineup & Fielding</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: white; }
-        h1 { text-align: center; color: #2F241D; border-bottom: 3px solid #FFC425; padding-bottom: 10px; }
+        h1 { text-align: center; color: #002244; border-bottom: 3px solid #FFD700; padding-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #2F241D; color: white; font-weight: bold; }
+        th { background: #002244; color: white; font-weight: bold; }
         tr:nth-child(even) { background: #f9f9f9; }
         .section { page-break-inside: avoid; margin-bottom: 30px; }
         .print-date { text-align: right; font-size: 0.9em; color: #666; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <h1>⚾ Bronco Padres Manager</h1>
+    <h1>⚾ San Diego Hawks Manager</h1>
     <div class="print-date">Printed: ${new Date().toLocaleString()}</div>
     
     <div class="section">
@@ -1084,7 +1084,7 @@
                 lastSyncTime = Date.now();
                 lastSyncState = getCurrentStateString();
                 apiCallsThisMonth += 1;
-                localStorage.setItem('syncStatus', JSON.stringify({
+                localStorage.setItem('hawksSyncStatus', JSON.stringify({
                     lastSyncTime,
                     apiCallsThisMonth,
                     syncDate: new Date().toISOString().split('T')[0]
@@ -1099,7 +1099,7 @@
 
     function startAutoSync() {
         // Load sync status from localStorage
-        const saved = localStorage.getItem('syncStatus');
+        const saved = localStorage.getItem('hawksSyncStatus');
         if (saved) {
             const status = JSON.parse(saved);
             const today = new Date().toISOString().split('T')[0];
